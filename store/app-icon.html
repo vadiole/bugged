@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bugged app icon</title>
+<link rel="stylesheet" href="lab.css">
+<style>
+.app-icon { display: grid; grid-template-columns: minmax(0, 1fr) 328px; min-height: 0; }
+.app-icon .stagebox { overflow: auto; grid-template-columns: minmax(0, 1fr); place-items: start center; padding: 32px 24px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, 176px); justify-content: center; align-items: start; gap: 32px 24px; width: 100%; max-width: 1240px; }
+.tile { font: inherit; color: inherit; background: none; border: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; justify-items: center; text-align: center; cursor: pointer; }
+.tile canvas { width: 132px; height: 132px; transition: scale 140ms; }
+.tile:hover canvas { scale: 1.04; }
+.tile:focus-visible { outline: 2px solid var(--accent); outline-offset: 6px; border-radius: 12px; }
+.tile b { margin-top: 14px; font-weight: 600; font-size: 12.5px; line-height: 18px; display: flex; gap: 6px; align-items: center; justify-content: center; max-width: 100%; white-space: nowrap; }
+.tile small { margin-top: 6px; color: var(--dim); font-size: 11.5px; line-height: 16px; height: 48px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+.grid.bare small, .grid.untitled b { display: none; }
+.focus { display: grid; gap: 28px; justify-items: center; align-self: center; }
+.focus[hidden], .grid[hidden] { display: none; }
+.previews { display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; align-items: end; }
+figure { margin: 0; display: grid; gap: 8px; justify-items: center; color: var(--dim); font-size: 12px; }
+.previews .big { width: 216px; height: 216px; }
+.layer { background: repeating-conic-gradient(#2a2b2f 0 25%, #222326 0 50%) 0 0 / 16px 16px; }
+.home { display: flex; gap: 18px; align-items: center; padding: 16px 22px; border-radius: 22px; }
+.home.light { background: #e9e6df; }
+.home.dark { background: #0d0e10; }
+.mask-circle { border-radius: 50%; }
+.mask-squircle { border-radius: 30%; }
+.mask-square { border-radius: 20%; }
+.mask-pixel { border-radius: 31.6%; }
+@media (max-width: 760px) { body { overflow: auto; } .app-icon { grid-template-columns: minmax(0, 1fr); } .side { border-left: 0; border-top: 1px solid var(--line); } }
+</style>
+</head>
+<body>
+<header class="bar">
+    <h1>Bugged <span>app icon</span></h1>
+    <p class="dim" id="title">All concepts</p>
+</header>
+<main class="app-icon">
+    <div class="work">
+        <div class="strip" id="actions"></div>
+        <div class="stagebox">
+            <div class="grid" id="grid"></div>
+            <div class="focus" id="focus" hidden>
+                <div class="previews" id="previews"></div>
+                <div class="previews" id="sizes"></div>
+            </div>
+        </div>
+    </div>
+    <aside class="side" id="side"></aside>
+</main>
+<footer class="bar foot"><p class="dim">Click a concept or press its key to open it · ← → next concept · Esc or G back to the grid · M mask · T titles · D descriptions · S save the whole grid · double-click a slider to reset it</p></footer>
+<script type="module">
+import * as ui from './js/ui.js'
+import { squircle, squircleClip } from './js/squircle.js'
+
+const PLAY = 512
+const LAYER = 1728
+
+const LOOK = {
+    mask: 'pixel',
+    notes: true,
+    titles: true,
+}
+const LOOK_SCHEMA = [
+    { group: 'Grid' },
+    { key: 'mask', label: 'Mask', type: 'select', options: [['pixel', 'Pixel launcher'], ['circle', 'Circle'], ['squircle', 'Squircle'], ['square', 'Rounded']] },
+    { key: 'titles', label: 'Titles in the grid', type: 'toggle' },
+    { key: 'notes', label: 'Descriptions in the grid', type: 'toggle' },
+]
+
+const CONCEPTS = []
+
+const MODULES = [
+    'chrome', 'thermal', 'holo', 'glass-eye', 'xray',
+    'engraving', 'cross-stitch', 'riso', 'linocut', 'stamp',
+    'pixel', 'ascii', 'glitch', 'turing', 'scope',
+    'moire', 'topo', 'neon', 'stained-glass', 'origami', 'constellation', 'inkblot',
+    'clay',
+]
+for (const name of MODULES) {
+    try {
+        const icon = (await import(`./js/icons/${name}.js`)).default
+        CONCEPTS.push({ ...icon, full: true })
+    } catch (error) {
+        console.warn('icon unavailable', name, error)
+    }
+}
+
+let beetle = null
+let beetleSchema = []
+let beetleDefaults = {}
+try {
+    const m = await import('./js/beetle.js')
+    beetle = m.createBeetle()
+    beetleSchema = m.BEETLE_SCHEMA
+    beetleDefaults = m.BEETLE_DEFAULTS
+} catch (error) {
+    console.warn('3D beetle unavailable', error)
+}
+if (beetle) {
+    CONCEPTS.unshift({
+        id: 'beetle', name: '3D beetle', note: 'Realistic jewel beetle. Plain, in amber or pinned.', three: true,
+        schema: beetleSchema,
+        defaults: { ...beetleDefaults },
+    })
+}
+
+const KEYS = '1234567890QWERYUIOPAFHJKLZXCVBN'
+const look = ui.store('icon-look-3', LOOK)
+for (const concept of CONCEPTS) concept.state = ui.store('icon-' + concept.id, concept.defaults ?? {})
+
+function blank(size) {
+    const canvas = document.createElement('canvas')
+    canvas.width = canvas.height = size
+    return canvas
+}
+
+function render(concept, S, { background = true, inset = 1 } = {}) {
+    const canvas = blank(S)
+    const c = canvas.getContext('2d')
+    const k = concept.state.values
+    try {
+        if (concept.three) {
+            const size = Math.round(S * inset)
+            const shot = beetle.render(size, { ...beetleDefaults, ...k }, { transparent: !background })
+            c.drawImage(shot, (S - size) / 2, (S - size) / 2, size, size)
+        } else {
+            concept.draw(c, S, { ...concept.defaults, ...k })
+        }
+    } catch (error) {
+        console.error(concept.id, error)
+        c.fillStyle = '#400'
+        c.fillRect(0, 0, S, S)
+    }
+    return canvas
+}
+
+const dpr = Math.min(window.devicePixelRatio || 1, 2)
+const grid = document.getElementById('grid')
+const focus = document.getElementById('focus')
+const side = document.getElementById('side')
+const title = document.getElementById('title')
+let open = -1
+
+const tiles = CONCEPTS.map((concept, i) => {
+    const canvas = blank(Math.round(132 * dpr))
+    const tile = ui.el('button', { class: 'tile', type: 'button', onclick: () => show(i) },
+        canvas,
+        ui.el('b', {}, ui.el('kbd', { text: KEYS[i] ?? '' }), concept.name),
+        ui.el('small', { text: concept.note }),
+    )
+    grid.append(tile)
+    return canvas
+})
+
+const figure = (cls, label, css) => {
+    const canvas = blank(Math.round(css * dpr))
+    canvas.style.width = canvas.style.height = css + 'px'
+    canvas.className = cls
+    return [canvas, ui.el('figure', {}, canvas, ui.el('figcaption', { text: label }))]
+}
+const [foreCanvas, foreFigure] = figure('big layer', 'Foreground, 108dp', 216)
+const [maskCanvas, maskFigure] = figure('big', 'Adaptive icon', 216)
+const [playCanvas, playFigure] = figure('big mask-square', 'Play, 512', 216)
+const themedTones = { light: ['#dbe1ff', '#35456e'], dark: ['#2c3246', '#dbe1ff'] }
+const themedViews = ['light', 'dark'].map((tone) => {
+    const [canvas, node] = figure('big', `Themed, ${tone}`, 216)
+    return { canvas, node, tone }
+})
+document.getElementById('previews').append(foreFigure, maskFigure, playFigure, ...themedViews.map((v) => v.node))
+
+function themedOf(concept) {
+    return concept.themed?.({ ...concept.defaults, ...concept.state.values })
+}
+
+function drawThemed(canvas, t, [background, ink]) {
+    const c = canvas.getContext('2d')
+    const S = canvas.width
+    c.setTransform(1, 0, 0, 1, 0, 0)
+    c.fillStyle = background
+    c.fillRect(0, 0, S, S)
+    c.setTransform(S / 72, 0, 0, S / 72, (-18 * S) / 72, (-18 * S) / 72)
+    c.fillStyle = c.strokeStyle = ink
+    c.lineWidth = t.frameWidth
+    c.lineCap = 'butt'
+    c.lineJoin = 'miter'
+    c.stroke(new Path2D(t.frame))
+    c.translate(t.ox, t.oy)
+    c.rotate((t.rotation * Math.PI) / 180)
+    c.translate(-t.ox, -t.oy)
+    c.fill(new Path2D(t.body))
+    c.lineWidth = t.limbWidth
+    c.lineCap = c.lineJoin = 'round'
+    c.stroke(new Path2D(t.limbs))
+    c.setTransform(1, 0, 0, 1, 0, 0)
+}
+const small = [['light', 56], ['light', 40], ['dark', 56], ['dark', 40]].map(([tone, css]) => {
+    const canvas = blank(Math.round(css * dpr))
+    canvas.style.width = canvas.style.height = css + 'px'
+    return { canvas, tone }
+})
+for (const tone of ['light', 'dark']) {
+    document.getElementById('sizes').append(ui.el('figure', {}, ui.el('div', { class: 'home ' + tone }, small.filter((s) => s.tone === tone).map((s) => s.canvas)), ui.el('figcaption', { text: `Home screen, ${tone}` })))
+}
+
+function put(canvas, source) {
+    const c = canvas.getContext('2d')
+    c.clearRect(0, 0, canvas.width, canvas.height)
+    c.imageSmoothingQuality = 'high'
+    c.drawImage(source, 0, 0, canvas.width, canvas.height)
+}
+
+function paint() {
+    const mask = 'mask-' + look.get('mask')
+    const shape = { smoothing: look.get('mask') === 'pixel' ? 0 : 0.6 }
+    grid.classList.toggle('bare', !look.get('notes'))
+    grid.classList.toggle('untitled', !look.get('titles'))
+    if (open < 0) {
+        CONCEPTS.forEach((concept, i) => {
+            tiles[i].className = mask
+            squircleClip(tiles[i], shape)
+            put(tiles[i], render(concept, tiles[i].width))
+        })
+        return
+    }
+    const concept = CONCEPTS[open]
+    const full = render(concept, foreCanvas.width)
+    put(foreCanvas, concept.full ? full : render(concept, foreCanvas.width, { background: false, inset: 72 / 108 }))
+    maskCanvas.className = 'big ' + mask
+    squircleClip(maskCanvas, shape)
+    squircleClip(playCanvas)
+    put(maskCanvas, full)
+    put(playCanvas, full)
+    for (const s of small) {
+        s.canvas.className = mask
+        squircleClip(s.canvas, shape)
+        put(s.canvas, full)
+    }
+    const t = themedOf(concept)
+    for (const v of themedViews) {
+        v.node.hidden = !t
+        if (!t) continue
+        v.canvas.className = 'big ' + mask
+        squircleClip(v.canvas, shape)
+        drawThemed(v.canvas, t, themedTones[v.tone])
+    }
+}
+
+let queued = false
+function schedule() {
+    if (queued) return
+    queued = true
+    requestAnimationFrame(() => {
+        queued = false
+        paint()
+    })
+}
+
+function show(i) {
+    open = i
+    const concept = CONCEPTS[i]
+    grid.hidden = i >= 0
+    focus.hidden = i < 0
+    title.textContent = concept ? `${KEYS[i]} · ${concept.name}. ${concept.note}` : 'All concepts'
+    side.replaceChildren()
+    if (concept?.schema?.length) side.append(ui.knobs(concept.schema, concept.state, { title: concept.name }))
+    side.append(ui.knobs(LOOK_SCHEMA, look, { title: 'Look' }))
+    back.disabled = i < 0
+    for (const b of exports) b.disabled = i < 0
+    try {
+        localStorage.setItem('bugged-lab:icon-open', String(i))
+    } catch {}
+    schedule()
+}
+
+const back = ui.button('All concepts', () => show(-1))
+const exports = [
+    ui.button(`Export foreground ${LAYER}`, () => {
+        const concept = CONCEPTS[open]
+        ui.download(render(concept, LAYER, { background: false, inset: 72 / 108 }), `bugged-${concept.id}-foreground-${LAYER}.png`)
+        ui.toast(`Exported the adaptive foreground, ${LAYER} px`)
+    }),
+    ui.button(`Export Play ${PLAY}`, () => {
+        const concept = CONCEPTS[open]
+        const big = render(concept, PLAY * 2)
+        const out = blank(PLAY)
+        const c = out.getContext('2d')
+        c.imageSmoothingQuality = 'high'
+        c.drawImage(big, 0, 0, PLAY, PLAY)
+        ui.download(out, `bugged-${concept.id}-play-${PLAY}.png`)
+        ui.toast(`Exported the Play icon, ${PLAY} px`)
+    }),
+    ui.button('Export themed XML', () => {
+        const t = themedOf(CONCEPTS[open])
+        if (!t) return ui.toast('This concept has no themed icon')
+        const a = ui.el('a', { href: URL.createObjectURL(new Blob([t.xml], { type: 'text/xml' })), download: 'ic_launcher_monochrome.xml' })
+        a.click()
+        ui.toast('Exported the themed icon as a vector drawable')
+    }),
+]
+function sheet() {
+    const cell = 256
+    const gap = 40
+    const titles = look.get('titles')
+    const notes = look.get('notes')
+    const text = (titles ? 36 : 0) + (notes ? 28 : 0)
+    const cols = Math.min(CONCEPTS.length, 6)
+    const rows = Math.ceil(CONCEPTS.length / cols)
+    const canvas = document.createElement('canvas')
+    canvas.width = gap + cols * (cell + gap)
+    canvas.height = gap + rows * (cell + text + gap)
+    const c = canvas.getContext('2d')
+    c.fillStyle = '#101113'
+    c.fillRect(0, 0, canvas.width, canvas.height)
+    c.textAlign = 'center'
+    c.textBaseline = 'top'
+    const radius = { circle: cell / 2, squircle: cell * 0.3, square: cell * 0.2 }[look.get('mask')]
+    CONCEPTS.forEach((concept, i) => {
+        const x = gap + (i % cols) * (cell + gap)
+        const y = gap + Math.floor(i / cols) * (cell + text + gap)
+        const icon = render(concept, cell)
+        c.save()
+        c.beginPath()
+        squircle(c, x, y, cell, cell, radius)
+        c.clip()
+        c.imageSmoothingQuality = 'high'
+        c.drawImage(icon, x, y, cell, cell)
+        c.restore()
+        if (titles) {
+            c.fillStyle = '#f0f0f0'
+            c.font = '600 17px -apple-system, "Helvetica Neue", sans-serif'
+            c.fillText(concept.name, x + cell / 2, y + cell + 12)
+        }
+        if (notes) {
+            c.fillStyle = '#9a9ba0'
+            c.font = '14px -apple-system, "Helvetica Neue", sans-serif'
+            let note = concept.note
+            while (note.length > 8 && c.measureText(note).width > cell + gap - 12) note = note.slice(0, -2).trimEnd() + '…'
+            c.fillText(note, x + cell / 2, y + cell + (titles ? 38 : 12))
+        }
+    })
+    return canvas
+}
+const whole = ui.button('Export the whole grid', () => {
+    ui.download(sheet(), 'bugged-icon-grid.png')
+    ui.toast('Exported every concept as one image')
+})
+document.getElementById('actions').append(back, ui.el('span', { class: 'spacer' }), whole, ...exports)
+
+look.onChange(schedule)
+for (const concept of CONCEPTS) concept.state.onChange(schedule)
+
+addEventListener('keydown', (event) => {
+    if (event.metaKey || event.ctrlKey || event.altKey) return
+    if (event.target.matches?.('input:not([type="range"]), textarea')) return
+    const key = event.key.toUpperCase()
+    const masks = ['pixel', 'circle', 'squircle', 'square']
+    if (key === 'ESCAPE' || key === 'G') show(-1)
+    else if (key === 'S') whole.click()
+    else if (key === 'T') look.set('titles', !look.get('titles'))
+    else if (key === 'D') look.set('notes', !look.get('notes'))
+    else if (key === 'M') look.set('mask', masks[(masks.indexOf(look.get('mask')) + 1) % masks.length])
+    else if (key === 'ARROWRIGHT' && open >= 0 && event.target.type !== 'range') show((open + 1) % CONCEPTS.length)
+    else if (key === 'ARROWLEFT' && open >= 0 && event.target.type !== 'range') show((open - 1 + CONCEPTS.length) % CONCEPTS.length)
+    else if (key.length === 1 && KEYS.includes(key) && KEYS.indexOf(key) < CONCEPTS.length) show(KEYS.indexOf(key))
+    else return
+    event.preventDefault()
+})
+
+let saved = -1
+try {
+    saved = Number(localStorage.getItem('bugged-lab:icon-open') ?? -1)
+} catch {}
+show(Number.isInteger(saved) && saved < CONCEPTS.length ? saved : -1)
+window.__appIcon = { sheet: () => sheet().toDataURL(), concepts: CONCEPTS.map((c) => c.id), show, look, png: (i, S = PLAY) => render(CONCEPTS[i], S).toDataURL() }
+document.documentElement.dataset.ready = '1'
+</script>
+</body>
+</html>
