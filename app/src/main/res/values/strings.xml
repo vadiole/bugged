@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Bugged</string>
+    <string name="app_description">Removes trackers from links. Works offline and collects nothing.</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
+    <string name="clipboard_title">Copied links</string>
+    <string name="clipboard_description">Cleans a link when you copy it. Uses an accessibility service to notice the copy.</string>
+    <string name="clipboard_action">Open accessibility settings</string>
+    <string name="links_title">Opened links</string>
+    <string name="links_description">Cleans a link when you tap it in another app. Bugged becomes the default browser and passes the link on.</string>
+    <string name="links_action">Change default browser</string>
+    <string name="browser_title">Browser</string>
+    <string name="browser_description">Where clean links open.</string>
+    <string name="browser_action">Choose browser</string>
+    <string name="browser_none">None found</string>
+    <string name="clean_link">Clean link</string>
+    <string name="service_summary">Removes trackers from copied links</string>
+    <string name="service_description">Notices when you copy a link and removes its trackers. To notice a copy, it looks for Copy buttons you tap and the clipboard preview. Bugged keeps nothing it sees and has no internet access.</string>
+    <string name="clip_label">Clean link</string>
+</resources>
