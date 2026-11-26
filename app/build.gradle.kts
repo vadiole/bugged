@@ -22,6 +22,19 @@ android {
         localeFilters += listOf("en", "cs", "da", "de", "el", "es", "fr", "hi", "it", "ja", "ka", "nb", "nl", "pl", "pt", "pt-rBR", "ru", "sl", "sv", "tr", "uk", "zh-rCN")
     }
 
+    signingConfigs {
+        val storeFile = providers.gradleProperty("bugged.signing.storeFile").orNull
+        if (storeFile != null) {
+            create("release") {
+                val password = file(providers.gradleProperty("bugged.signing.passwordFile").get()).readText().trim()
+                this.storeFile = file(storeFile)
+                storePassword = password
+                keyAlias = providers.gradleProperty("bugged.signing.keyAlias").get()
+                keyPassword = password
+            }
+        }
+    }
+
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
@@ -31,7 +44,14 @@ android {
                 enable = true
             }
             vcsInfo.include = false
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug").also {
+                val allowed = providers.gradleProperty("bugged.debugSignedRelease").orNull == "true"
+                gradle.taskGraph.whenReady {
+                    if (!allowed && allTasks.any { it.name.endsWith("Release") && (it.name.startsWith("package") || it.name.startsWith("bundle")) }) {
+                        throw GradleException("Release needs bugged.signing.* in ~/.gradle/gradle.properties, or -Pbugged.debugSignedRelease=true for a local test build")
+                    }
+                }
+            }
         }
         create("alpha") {
             initWith(getByName("release"))
