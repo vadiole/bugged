@@ -60,11 +60,19 @@ class Cleaner(rules: String, redirects: String) {
         val pairs = if (query.isEmpty()) emptyList() else query.split('&')
 
         if (depth < MAX_DEPTH) {
-            val wrapper = wrappers.firstOrNull { covers(it.host, host) && path.startsWith(it.path) }
-            if (wrapper != null) {
+            for (wrapper in wrappers) {
+                if (!covers(wrapper.host, host) || !path.startsWith(wrapper.path)) continue
+                val rest = path.substring(wrapper.path.length)
                 for (name in wrapper.params) {
-                    val value = pairs.firstOrNull { it.substringBefore('=') == name }?.substringAfter('=', "")
-                    val target = value?.let(::decode)
+                    val target = when (name) {
+                        QUERY -> if (SCHEME.containsMatchIn(query)) query + fragment else decode(query)
+                        SEGMENT -> rest.split('/').firstNotNullOfOrNull { part -> decode(part)?.takeIf(SCHEME::containsMatchIn) }
+                        SEGMENT_HTTPS -> bare(decode(rest.substringBefore('/')))?.let { "https://$it" }
+                        SEGMENT_HTTP -> bare(decode(rest.substringBefore('/')))?.let { "http://$it" }
+                        REST -> embedded(rest, url.substring(queryAt))
+                        REST_HTTPS -> bare(rest)?.let { "https://$it" + url.substring(queryAt) }
+                        else -> pairs.firstOrNull { it.substringBefore('=') == name }?.substringAfter('=', "")?.let(::decode)
+                    }
                     if (target != null && SCHEME.containsMatchIn(target)) {
                         return clean(target, depth + 1)
                     }
@@ -97,6 +105,24 @@ class Cleaner(rules: String, redirects: String) {
         }
     }
 
+    private fun bare(value: String?): String? = value?.takeIf { HOST.containsMatchIn(it) }
+
+    private fun embedded(rest: String, tail: String): String? {
+        var at = 0
+        while (at < rest.length) {
+            if (rest.startsWith("http", at, ignoreCase = true)) {
+                val raw = rest.substring(at)
+                if (SCHEME.containsMatchIn(raw)) return raw + tail
+                val decoded = decode(raw)
+                if (decoded != null && SCHEME.containsMatchIn(decoded)) return decoded
+            }
+            val next = rest.indexOf('/', at)
+            if (next < 0) break
+            at = next + 1
+        }
+        return null
+    }
+
     private fun covers(rule: String, host: String) = host == rule || host.endsWith(".$rule")
 
     private fun decode(value: String): String? = try {
@@ -107,6 +133,13 @@ class Cleaner(rules: String, redirects: String) {
 
     private companion object {
         const val MAX_DEPTH = 5
+        const val QUERY = ":query"
+        const val SEGMENT = ":segment"
+        const val SEGMENT_HTTPS = ":segment-https"
+        const val SEGMENT_HTTP = ":segment-http"
+        const val REST = ":rest"
+        const val REST_HTTPS = ":rest-https"
+        val HOST = Regex("^[a-z0-9-]+(\\.[a-z0-9-]+)+(/|$)", RegexOption.IGNORE_CASE)
         val SCHEME = Regex("^https?://", RegexOption.IGNORE_CASE)
         val LINK = Regex("""https?://[^\s<>"]+""", RegexOption.IGNORE_CASE)
         val TRAILING = charArrayOf('.', ',', ';', ':', '!', '?', ')', ']', '}', '\'')

@@ -49,6 +49,7 @@ Vendor docs justify a click ID the lists don't carry yet: Simo Ahava's click ide
 - **Prefix wildcard**: only for a vendor-specific prefix (`utm_*`, `mtm_*`, `pf_rd_*`). `pk_*`, `ga_*` and `itm_*` stay rejected; list the individual names.
 - **Affiliate parameters** are removed, as Brave and AdGuard do.
 - **Redirect wrapper**: the parameter holds a plain or percent-encoded URL. Base64 payloads and short links that need a network lookup are out of scope.
+- **Redirect wrapper outside a parameter**: a line in `redirects.base` may name a token instead of a parameter. `:query` means the whole query is the destination (`href.li/?https://…`). `:segment` means one path segment after the prefix is the encoded destination (`awstrack.me/L0/<url>/…`); `:segment-https` and `:segment-http` are the same for a segment without a scheme. `:rest` means everything after the prefix, from the first `http`, is the destination; `:rest-https` is the same for a path without a scheme (AMP caches). Every new token line gets a case that unwraps and a case that must stay unchanged.
 - **Licensing**: Bugged is MIT and several lists are GPL or LGPL. Take parameter names and hosts as facts; write nothing by copying a list's rules, regexes or structure.
 
 ## Traps
