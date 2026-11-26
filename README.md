@@ -14,15 +14,14 @@ An Android app that removes tracking tags from links you copy and open. Many lin
 #### Links you open
 
 - Tap a link in any app and it opens clean in your browser.
-- Bugged is the default browser app: it cleans each link and passes it on to the browser you picked. It never loads the page itself.
+- Set Bugged as your default browser app. It cleans each link you tap and passes it to the browser you picked. It never loads the page itself.
 
 #### Cleaning rules
 
-- Removes tracking tags such as `utm_source`, `fbclid` and `gclid`, plus the ones specific to a site.
+- Removes tracking tags such as `utm_source`, `fbclid` and `gclid`, and site-specific ones such as YouTube's `si`.
 - Unwraps redirect links such as `google.com/url?q=…` to their destination.
-- A broken link is worse than a missed tracker, so a tag is removed only when several maintained lists agree on it: AdGuard, Brave, ClearURLs, Firefox, uBlock Origin, Neat URL and Actually Legitimate URL Shortener Tool.
+- Bugged removes a tag only when several maintained lists agree on it, because a broken link is worse than a missed tag. The lists are AdGuard, Brave, ClearURLs, Firefox, uBlock Origin, Neat URL and Actually Legitimate URL Shortener Tool.
 
 #### Offline and private
 
 - Works offline. Bugged has no internet access, so nothing leaves your phone.
-- [Privacy policy](https://vadiole.me/bugged/privacy-policy)
