@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Accessibility label of the dimmed area behind a bottom sheet. Tapping it closes the sheet. -->
+    <string name="close">Kapat</string>
+    <!-- Accessibility label of the back arrow in the top bar. -->
+    <string name="back">Geri</string>
+    <!-- Status label on a feature card: the feature is on. -->
+    <string name="on">Açık</string>
+    <!-- Status label on a feature card: the feature is off. -->
+    <string name="off">Kapalı</string>
+    <!-- Button on a feature card. -->
+    <string name="turn_on">Aç</string>
+    <!-- Button on a feature card. -->
+    <string name="turn_off">Kapat</string>
+    <!-- Screen reader label of the "Turn on" button. %1$s is the feature, "Links you copy" or "Links you open". -->
+    <string name="turn_on_feature">%1$s özelliğini aç</string>
+    <!-- Screen reader label of the "Turn off" button. %1$s is the feature, "Links you copy" or "Links you open". -->
+    <string name="turn_off_feature">%1$s özelliğini kapat</string>
+    <string name="not_now">Şimdi değil</string>
+    <!-- Button that opens a list of browsers to pick from. -->
+    <string name="change">Değiştir</string>
+    <!-- Screen reader label of the "Change" button. -->
+    <string name="change_browser">Tarayıcıyı değiştir</string>
+
+    <!-- First screen. Headline, also the app's slogan. -->
+    <string name="welcome_title">Bağlantılarınızı temizleyin</string>
+    <string name="welcome_body">Birçok bağlantı, sitelere onu kimin paylaştığını ve neye dokunduğunuzu bildiren bir izleyici taşır. Bugged bu izleyiciyi kesip atarak gizliliğinizi korur. Bağlantı yine aynı sayfayı açar.</string>
+    <string name="welcome_offline">Çevrimdışı çalışır. Bugged’ın internet erişimi yoktur, bu yüzden hiçbir şey telefonunuzdan dışarı çıkmaz.</string>
+    <!-- "Accessibility" is the name of the Android settings section. Use the name Android uses in this language. -->
+    <string name="welcome_access">Bugged, kopyaladığınız bağlantıları algılayıp temizlemek için Erişilebilirlik’e ihtiyaç duyar.</string>
+    <string name="welcome_action">Kur</string>
+
+    <!-- Home headline while both features are off. -->
+    <string name="home_choose">Neyin temizleneceğini seçin</string>
+    <string name="home_copy">Kopyaladığınız bağlantılar temizleniyor</string>
+    <string name="home_open">Açtığınız bağlantılar temizleniyor</string>
+    <string name="home_both">Kopyaladığınız ve açtığınız bağlantılar temizleniyor</string>
+    <!-- Home headline. %1$s is the formatted number of links cleaned so far, like 1,280. -->
+    <plurals name="home_cleaned">
+        <item quantity="one">%1$s bağlantı temizlendi</item>
+        <item quantity="other">%1$s bağlantı temizlendi</item>
+    </plurals>
+
+    <string name="copy_title">Kopyaladığınız bağlantılar</string>
+    <string name="copy_description">Herhangi bir uygulamada bağlantıyı kopyalayın, temiz hâliyle yapıştırın.</string>
+    <string name="open_title">Açtığınız bağlantılar</string>
+    <string name="open_description">Herhangi bir uygulamada bağlantıya dokunun, tarayıcınızda temiz hâliyle açılsın.</string>
+    <!-- %1$s is a browser name, like Chrome. -->
+    <string name="open_browser">%1$s ile açılır</string>
+
+    <string name="copy_sheet_title">Kopyaladığınız bağlantıları temizleyin</string>
+    <!-- "Accessibility" is the name of the Android settings section. -->
+    <string name="copy_sheet_what">Bugged, kopyaladığınız bağlantıları algılamak için Erişilebilirlik’i kullanır; böylece izleyici içerenleri temizleyebilir.</string>
+    <string name="copy_sheet_access">Uygulama yalnızca dokunduğunuz Kopyala düğmelerine ve kopyaladığınız metne bakar. Ekranınızdaki başka hiçbir şeyi okumaz.</string>
+    <!-- Step 1. "Settings" is the Android Settings app. %1$s is the app name, Bugged. -->
+    <string name="copy_sheet_step_1">Ayarlar’da %1$s seçeneğine dokunun</string>
+    <!-- Step 2. %1$s is the label of the switch in Android's Accessibility settings, "Use Bugged". -->
+    <string name="copy_sheet_step_2">%1$s anahtarını açın</string>
+    <!-- Label of the switch in Android's Accessibility settings. Use Android's own wording in this language. %1$s is the app name. -->
+    <string name="copy_sheet_switch">%1$s özelliğini kullan</string>
+    <!-- “Restricted setting” is the title of an Android dialog, "App info" is an Android settings screen. %1$s is the menu item "Allow restricted settings". Use Android's own wording in this language. -->
+    <string name="copy_sheet_restricted">Ayarlar’da “Kısıtlanmış ayar” uyarısı çıkarsa Bugged’ın Uygulama bilgileri ekranını açın, ardından 3 noktaya ve %1$s seçeneğine dokunun.</string>
+    <!-- Menu item on Android's App info screen. Use Android's own wording in this language. -->
+    <string name="copy_sheet_allow">Kısıtlanmış ayarlara izin verme</string>
+    <string name="copy_sheet_action">Ayarlar’ı aç</string>
+
+    <string name="open_sheet_title">Açtığınız bağlantıları temizleyin</string>
+    <string name="open_sheet_what">Bugged’ı varsayılan tarayıcı uygulamanız yapın ve temiz bağlantıları açacak tarayıcıyı seçin. Bugged dokunduğunuz her bağlantıyı temizleyip o tarayıcıya iletir.</string>
+    <string name="open_sheet_never">Bugged sayfayı hiçbir zaman kendisi yüklemez.</string>
+    <!-- %1$s is a browser name, like Chrome. -->
+    <string name="open_sheet_browser">Temiz bağlantılar %1$s ile açılır</string>
+    <string name="open_sheet_action">Varsayılan olarak ayarla</string>
+    <string name="browser_none">Tarayıcı bulunamadı</string>
+    <!-- Title of the list of installed browsers. -->
+    <string name="browser_title">Tarayıcı seçin</string>
+
+    <string name="about">Hakkında</string>
+    <string name="about_version">Uygulama sürümü</string>
+    <string name="about_rate">Google Play’de puan ver</string>
+    <string name="about_feedback">Geri bildirim ve fikirler</string>
+    <string name="about_feedback_note">Hata bildirin veya yeni bir özellik önerin. Her e-postayı okuyorum.</string>
+    <string name="about_feedback_subject">Geri bildirim ve fikirler</string>
+    <string name="about_author">Tasarım ve geliştirme: @vadiole</string>
+    <!-- Accessibility action on the version row. -->
+    <string name="about_copy">Uygulama ve cihaz bilgilerini kopyala</string>
+    <!-- Short message after the app and device info was copied. -->
+    <string name="about_copied">Kopyalandı</string>
+    <string name="privacy_policy">Gizlilik politikası</string>
+
+    <!-- Shown by Android in Accessibility settings, under the app name. -->
+    <string name="service_summary">Kopyalanan bağlantılardaki izleyicileri kaldırır</string>
+    <string name="service_description">Bir bağlantı kopyaladığınızı fark eder ve izleyicilerini kaldırır. Kopyalamayı fark etmek için dokunduğunuz Kopyala düğmelerine ve pano önizlemesine bakar. Bugged gördüğü hiçbir şeyi saklamaz ve internet erişimi yoktur.</string>
+    <!-- Label Android may show for the cleaned clipboard content. -->
+    <string name="clip_label">Temiz bağlantı</string>
+</resources>

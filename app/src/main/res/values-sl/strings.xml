@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Accessibility label of the dimmed area behind a bottom sheet. Tapping it closes the sheet. -->
+    <string name="close">Zapri</string>
+    <!-- Accessibility label of the back arrow in the top bar. -->
+    <string name="back">Nazaj</string>
+    <!-- Status label on a feature card: the feature is on. -->
+    <string name="on">Vklopljeno</string>
+    <!-- Status label on a feature card: the feature is off. -->
+    <string name="off">Izklopljeno</string>
+    <!-- Button on a feature card. -->
+    <string name="turn_on">Vklopi</string>
+    <!-- Button on a feature card. -->
+    <string name="turn_off">Izklopi</string>
+    <!-- Screen reader label of the "Turn on" button. %1$s is the feature, "Links you copy" or "Links you open". -->
+    <string name="turn_on_feature">Vklopi %1$s</string>
+    <!-- Screen reader label of the "Turn off" button. %1$s is the feature, "Links you copy" or "Links you open". -->
+    <string name="turn_off_feature">Izklopi %1$s</string>
+    <string name="not_now">Ne zdaj</string>
+    <!-- Button that opens a list of browsers to pick from. -->
+    <string name="change">Spremeni</string>
+    <!-- Screen reader label of the "Change" button. -->
+    <string name="change_browser">Spremeni brskalnik</string>
+
+    <!-- First screen. Headline, also the app's slogan. -->
+    <string name="welcome_title">Očistite svoje povezave</string>
+    <string name="welcome_body">Številne povezave vsebujejo sledilnik, ki spletnim mestom pove, kdo jih je delil in kaj ste tapnili. Bugged zaščiti vašo zasebnost tako, da ga odstrani. Povezava še vedno odpre isto stran.</string>
+    <string name="welcome_offline">Deluje brez interneta. Bugged nima dostopa do interneta, zato nič ne zapusti vašega telefona.</string>
+    <!-- "Accessibility" is the name of the Android settings section. Use the name Android uses in this language. -->
+    <string name="welcome_access">Bugged potrebuje Dostopnost, da zazna in očisti povezave, ki jih kopirate.</string>
+    <string name="welcome_action">Nastavi</string>
+
+    <!-- Home headline while both features are off. -->
+    <string name="home_choose">Izberite, kaj želite očistiti</string>
+    <string name="home_copy">Čiščenje povezav, ki jih kopirate</string>
+    <string name="home_open">Čiščenje povezav, ki jih odprete</string>
+    <string name="home_both">Čiščenje povezav, ki jih kopirate in odprete</string>
+    <!-- Home headline. %1$s is the formatted number of links cleaned so far, like 1,280. -->
+    <plurals name="home_cleaned">
+        <item quantity="one">%1$s očiščena povezava</item>
+        <item quantity="two">%1$s očiščeni povezavi</item>
+        <item quantity="few">%1$s očiščene povezave</item>
+        <item quantity="other">%1$s očiščenih povezav</item>
+    </plurals>
+
+    <string name="copy_title">Povezave, ki jih kopirate</string>
+    <string name="copy_description">Kopirajte povezavo v kateri koli aplikaciji in jo prilepite očiščeno.</string>
+    <string name="open_title">Povezave, ki jih odprete</string>
+    <string name="open_description">Tapnite povezavo v kateri koli aplikaciji in v brskalniku se odpre očiščena.</string>
+    <!-- %1$s is a browser name, like Chrome. -->
+    <string name="open_browser">Odpre se v brskalniku %1$s</string>
+
+    <string name="copy_sheet_title">Očistite povezave, ki jih kopirate</string>
+    <!-- "Accessibility" is the name of the Android settings section. -->
+    <string name="copy_sheet_what">Bugged uporablja Dostopnost, da zazna povezave, ki jih kopirate, in jih očisti, kadar vsebujejo sledilnik.</string>
+    <string name="copy_sheet_access">Aplikacija gleda samo gumbe Kopiraj, ki jih tapnete, in besedilo, ki ga kopirate. Ničesar drugega na zaslonu nikoli ne prebere.</string>
+    <!-- Step 1. "Settings" is the Android Settings app. %1$s is the app name, Bugged. -->
+    <string name="copy_sheet_step_1">V Nastavitvah tapnite %1$s</string>
+    <!-- Step 2. %1$s is the label of the switch in Android's Accessibility settings, "Use Bugged". -->
+    <string name="copy_sheet_step_2">Vklopite %1$s</string>
+    <!-- Label of the switch in Android's Accessibility settings. Use Android's own wording in this language. %1$s is the app name. -->
+    <string name="copy_sheet_switch">Uporabi funkcijo %1$s</string>
+    <!-- “Restricted setting” is the title of an Android dialog, "App info" is an Android settings screen. %1$s is the menu item "Allow restricted settings". Use Android's own wording in this language. -->
+    <string name="copy_sheet_restricted">Če se v Nastavitvah prikaže „Prepovedana nastavitev“, odprite zaslon Podatki o aplikaciji za Bugged, tapnite tri pike in nato %1$s.</string>
+    <!-- Menu item on Android's App info screen. Use Android's own wording in this language. -->
+    <string name="copy_sheet_allow">Dovoli omejene nastavitve</string>
+    <string name="copy_sheet_action">Odpri Nastavitve</string>
+
+    <string name="open_sheet_title">Očistite povezave, ki jih odprete</string>
+    <string name="open_sheet_what">Nastavite Bugged kot privzeti brskalnik in izberite brskalnik, ki bo odpiral očiščene povezave. Bugged očisti vsako povezavo, ki jo tapnete, in jo posreduje naprej.</string>
+    <string name="open_sheet_never">Bugged strani nikoli ne naloži sam.</string>
+    <!-- %1$s is a browser name, like Chrome. -->
+    <string name="open_sheet_browser">Očiščene povezave se odprejo v brskalniku %1$s</string>
+    <string name="open_sheet_action">Nastavi kot privzeto</string>
+    <string name="browser_none">Ni nameščenega brskalnika</string>
+    <!-- Title of the list of installed browsers. -->
+    <string name="browser_title">Izberite brskalnik</string>
+
+    <string name="about">O aplikaciji</string>
+    <string name="about_version">Različica aplikacije</string>
+    <string name="about_rate">Ocenite v Trgovini Google Play</string>
+    <string name="about_feedback">Povratne informacije in ideje</string>
+    <string name="about_feedback_note">Prijavite napako ali predlagajte funkcijo. Preberem vsako e-poštno sporočilo.</string>
+    <string name="about_feedback_subject">Povratne informacije in ideje</string>
+    <string name="about_author">Oblikoval in razvil @vadiole</string>
+    <!-- Accessibility action on the version row. -->
+    <string name="about_copy">Kopiraj podatke o aplikaciji in napravi</string>
+    <!-- Short message after the app and device info was copied. -->
+    <string name="about_copied">Kopirano</string>
+    <string name="privacy_policy">Pravilnik o zasebnosti</string>
+
+    <!-- Shown by Android in Accessibility settings, under the app name. -->
+    <string name="service_summary">Odstrani sledilnike iz kopiranih povezav</string>
+    <string name="service_description">Zazna, ko kopirate povezavo, in odstrani njene sledilnike. Da zazna kopiranje, išče gumbe Kopiraj, ki jih tapnete, in predogled odložišča. Bugged ne shrani ničesar, kar vidi, in nima dostopa do interneta.</string>
+    <!-- Label Android may show for the cleaned clipboard content. -->
+    <string name="clip_label">Očiščena povezava</string>
+</resources>
