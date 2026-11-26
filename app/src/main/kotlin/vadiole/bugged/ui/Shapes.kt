@@ -81,7 +81,8 @@ class RoundDrawable(color: Int = Color.WHITE, radius: Float = 0f) : Drawable() {
     }
 
     override fun getOutline(outline: Outline) {
-        outline.setRoundRect(rect.left.toInt(), rect.top.toInt(), rect.right.toInt(), rect.bottom.toInt(), min(top, bottom))
+        val limit = min(rect.width(), rect.height()) / 2f
+        outline.setRoundRect(rect.left.toInt(), rect.top.toInt(), rect.right.toInt(), rect.bottom.toInt(), min(min(top, bottom), limit))
     }
 
     override fun setAlpha(alpha: Int) = Unit

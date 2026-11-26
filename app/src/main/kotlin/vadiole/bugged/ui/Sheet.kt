@@ -23,7 +23,9 @@ abstract class Sheet(context: Context, protected val colors: Colors, title: Int)
 
     protected val content = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL }
 
-    private val scrim = View(context).apply {
+    private val scrim = object : View(context) {
+        override fun hasOverlappingRendering() = false
+    }.apply {
         setBackgroundColor(colors.scrim)
         contentDescription = context.getString(R.string.close)
         isFocusable = false
@@ -83,7 +85,7 @@ abstract class Sheet(context: Context, protected val colors: Colors, title: Int)
     private var closed: (() -> Unit)? = null
     private var offset = 0f
 
-    private val spring = Motion.spatialDefault.animator(1f) { value ->
+    private val spring = Motion.spatialDefault.animator(1f, onEnd = { scroll.setLayerType(LAYER_TYPE_NONE, null) }) { value ->
         place(value)
         if (closing && value >= panel.height) finish()
     }
@@ -115,7 +117,8 @@ abstract class Sheet(context: Context, protected val colors: Colors, title: Int)
         if (closing) return
         spring.value = panel.height.toFloat()
         place(spring.value)
-        spring.animateTo(0f)
+        scroll.setLayerType(LAYER_TYPE_HARDWARE, null)
+        viewTreeObserver.registerFrameCommitCallback { if (isAttachedToWindow && !closing && !dragging) slide(0f) }
     }
 
     fun close(onEnd: () -> Unit) {
@@ -126,7 +129,7 @@ abstract class Sheet(context: Context, protected val colors: Colors, title: Int)
             return
         }
         spring.value = offset
-        spring.animateTo(panel.height.toFloat() + dp(1f))
+        slide(panel.height.toFloat() + dp(1f))
     }
 
     fun backProgress(progress: Float) {
@@ -142,6 +145,11 @@ abstract class Sheet(context: Context, protected val colors: Colors, title: Int)
 
     fun backCancel() {
         panel.animate().scaleX(1f).scaleY(1f).setDuration(200L).setInterpolator(Motion.emphasized).start()
+    }
+
+    private fun slide(target: Float) {
+        scroll.setLayerType(LAYER_TYPE_HARDWARE, null)
+        spring.animateTo(target)
     }
 
     private fun finish() {
@@ -170,7 +178,7 @@ abstract class Sheet(context: Context, protected val colors: Colors, title: Int)
         val away = velocity > fast || (velocity > -fast && offset > dp(POSITION_THRESHOLD))
         spring.value = offset
         spring.velocity = velocity
-        if (away) dismiss() else spring.animateTo(0f)
+        if (away) dismiss() else slide(0f)
     }
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {

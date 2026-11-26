@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.LayerDrawable
 import android.text.TextUtils
 import android.view.Gravity
 import android.view.View
@@ -24,8 +25,10 @@ class ActionButton(context: Context, colors: Colors, kind: Kind, large: Boolean,
     private val shape = RoundDrawable()
     private val rest = dp(if (large) 28f else 20f)
     private val squeezed = dp(if (large) 12f else 8f)
-    private val morph = Motion.effectsDefault.animator(0.5f, rest) { shape.radius = it }
-    private val filled = kind != Kind.Text
+    private val morph = Motion.effectsDefault.animator(0.5f, rest) {
+        shape.radius = it
+        invalidateOutline()
+    }
     private var ready = false
 
     init {
@@ -47,6 +50,7 @@ class ActionButton(context: Context, colors: Colors, kind: Kind, large: Boolean,
         setPadding(side, 0, side, 0)
         shape.radius = rest
         shape.insetY = dp((max(height, TARGET) - height) / 2)
+        clipToOutline = true
         when (kind) {
             Kind.Filled -> tint(colors.primary, colors.onPrimary)
             Kind.Tonal -> tint(colors.secondaryContainer, colors.onSecondaryContainer)
@@ -56,8 +60,8 @@ class ActionButton(context: Context, colors: Colors, kind: Kind, large: Boolean,
 
     fun tint(container: Int, content: Int) {
         setTextColor(content)
-        shape.color = if (filled) container else Color.WHITE
-        background = if (filled) ripple(content, shape) else ripple(content, null, shape)
+        shape.color = container
+        background = LayerDrawable(arrayOf(shape, ripple(content, null, ColorDrawable(Color.WHITE))))
     }
 
     override fun drawableStateChanged() {
@@ -70,6 +74,7 @@ class ActionButton(context: Context, colors: Colors, kind: Kind, large: Boolean,
         super.onDetachedFromWindow()
         morph.snapTo(rest)
         shape.radius = rest
+        invalidateOutline()
     }
 
     private companion object {
@@ -82,7 +87,10 @@ class IconButton(context: Context, colors: Colors, icon: Int, label: Int) : Imag
     private val shape = RoundDrawable()
     private val rest = dp(20f)
     private val squeezed = dp(8f)
-    private val morph = Motion.effectsDefault.animator(0.5f, rest) { shape.radius = it }
+    private val morph = Motion.effectsDefault.animator(0.5f, rest) {
+        shape.radius = it
+        invalidateOutline()
+    }
     private var ready = false
 
     init {
@@ -95,7 +103,9 @@ class IconButton(context: Context, colors: Colors, icon: Int, label: Int) : Imag
         shape.radius = rest
         shape.insetX = dp(4)
         shape.insetY = dp(4)
-        background = ripple(colors.onSurfaceVariant, null, shape)
+        shape.color = Color.TRANSPARENT
+        clipToOutline = true
+        background = LayerDrawable(arrayOf(shape, ripple(colors.onSurfaceVariant, null, ColorDrawable(Color.WHITE))))
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
