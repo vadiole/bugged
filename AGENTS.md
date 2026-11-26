@@ -17,6 +17,19 @@ Main features:
 - No comments or docs in code. Exception: critical info with a link to an issue or source.
 - User-visible text in `strings.xml`.
 
+## APK size
+
+A non-inline Kotlin stdlib call keeps stdlib classes in the dex. Inline stdlib functions (`map`, `filter`, `any`, `let`, `apply`) cost nothing; for everything else, write the platform or `java.util` equivalent:
+
+- Lazy init: a nullable backing field with a getter instead of `by lazy` (`Type.brand`), with `@Volatile` and `synchronized` when it is read off the main thread (`App.cleaner`).
+- Regex: `java.util.regex.Pattern` and `Matcher` instead of `kotlin.text.Regex` (`Cleaner.replaceLinks`).
+- Splitting: `splitBy(Char)` from `String.kt` instead of `String.split`.
+- Collections: `Collections.emptyList()`, `ArrayList`, `HashSet`, `LinkedHashSet`, the `*To(destination)` variants (`mapTo`, `filterTo`, `filterNotTo`) and in-place `sortBy` instead of `emptyList`, `buildList`, `toSet`, `distinct`, `sortedBy` and `list + list`.
+- Ranges and enums: `lastIndex downTo 0` instead of `indices.reversed()`, `Route.values()` instead of `Route.entries`.
+- IO and threads: `InputStreamReader` with `try`/`finally` instead of `bufferedReader().use`, `Thread { }.start()` instead of `thread { }`.
+
+A change that adds a stdlib call the list doesn't name is done when the alpha APK is no larger than before it.
+
 ## Commands
 
 ```
