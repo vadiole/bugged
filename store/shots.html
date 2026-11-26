@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bugged store shots</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400..800&family=Roboto+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&display=block">
+<style>
+:root { --deep: #1c0038; --violet: #2a0052; --glow: #6a0a78; --hot: #fca314; --core: #ffd326; --ink: #fff; --cut: #ff5a4f; }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #0e0e11; color: #ddd; font: 13px/1.4 -apple-system, "Inter", sans-serif; }
+body.plain { background: none; }
+#bar { display: flex; gap: 14px; align-items: center; padding: 10px 16px; border-bottom: 1px solid #2a2a31; }
+#bar kbd { font: 11px ui-monospace, Menlo, monospace; background: #25252b; border-radius: 4px; padding: 1px 5px; margin-right: 4px; }
+#bar .on { color: #ffd326; }
+#stage { display: flex; gap: 24px; padding: 24px; align-items: flex-start; justify-content: center; flex-wrap: wrap; }
+.slot { position: relative; overflow: hidden; border-radius: 6px; }
+body.plain #bar { display: none; }
+body.plain #stage { padding: 0; display: block; }
+body.plain .slot { border-radius: 0; }
+
+.frame { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-origin: 0 0; overflow: hidden; font-family: "Google Sans Flex", sans-serif; color: var(--ink); background: #212022; }
+.frame::before { content: ""; position: absolute; inset: 0; background: url("ui/noise.png") 0 0 / 1080px 1920px; opacity: .5; pointer-events: none; }
+.frame.wide { width: 1024px; height: 500px; }
+.caption { position: absolute; left: 60px; right: 60px; top: 150px; text-align: center; font-size: 96px; line-height: 104px; font-weight: 700; letter-spacing: -1.5px; text-wrap: balance; }
+.phone { position: absolute; left: 50%; top: 350px; width: 680px; transform: translateX(-50%); filter: drop-shadow(0 40px 60px rgb(0 0 0 / .5)); }
+.bezel { padding: 12px; background: #0b0b0f; border-radius: 92px; }
+.bezel img { display: block; width: 100%; border-radius: 80px; }
+
+.link { font: 500 44px/1 "Roboto Mono", monospace; white-space: nowrap; display: flex; align-items: center; }
+.tag { background: rgb(255 90 79 / .18); color: var(--cut); border-radius: 14px; padding: 16px 14px; margin-left: 4px; text-decoration: line-through; text-decoration-thickness: 4px; }
+
+.hero .icon { position: absolute; left: 50%; top: 440px; width: 440px; height: 440px; transform: translateX(-50%); border-radius: 104px; box-shadow: 0 50px 140px rgb(0 0 0 / .6); }
+.hero .name { position: absolute; left: 0; right: 0; top: 930px; text-align: center; font-size: 64px; font-weight: 600; }
+.hero .cards { position: absolute; left: 80px; right: 80px; top: 1160px; display: grid; gap: 28px; }
+.card { background: rgb(255 255 255 / .08); border: 2px solid rgb(255 255 255 / .1); border-radius: 44px; padding: 40px 44px; backdrop-filter: blur(20px); }
+.card .label { font-size: 34px; font-weight: 500; opacity: .7; margin-bottom: 22px; display: flex; align-items: center; gap: 12px; }
+.card .sym { font-family: "Material Symbols Rounded"; font-size: 40px; font-variation-settings: "FILL" 1; }
+.card.clean { background: rgb(255 211 38 / .12); border-color: rgb(255 211 38 / .35); }
+.card.clean .label { color: var(--core); opacity: 1; }
+.hero .link { font-size: 28px; }
+.hero .tag { padding: 12px 10px; }
+
+.clip { position: absolute; left: 60px; right: 60px; top: 1180px; background: #16161c; border: 2px solid rgb(255 255 255 / .12); border-radius: 48px; padding: 40px 44px; box-shadow: 0 40px 100px rgb(0 0 0 / .6); display: grid; gap: 30px; }
+.clip .row { display: flex; align-items: center; gap: 22px; }
+.clip .sym { font-family: "Material Symbols Rounded"; font-size: 52px; font-variation-settings: "FILL" 1; flex: none; opacity: .7; }
+.clip .row.ok .sym { color: var(--core); opacity: 1; }
+.clip .link { font-size: 26px; }
+.clip .tag { padding: 10px 8px; border-radius: 10px; }
+.clip .rule { height: 2px; background: rgb(255 255 255 / .1); margin: 0 -44px; }
+
+.wide .icon { position: absolute; left: 150px; top: 130px; width: 240px; height: 240px; border-radius: 58px; box-shadow: 0 24px 70px rgb(0 0 0 / .6); }
+.wide .name { position: absolute; left: 440px; top: 138px; font-size: 84px; font-weight: 700; letter-spacing: -1px; }
+.wide .line { position: absolute; left: 444px; top: 250px; font-size: 36px; font-weight: 500; opacity: .85; }
+.wide .link { position: absolute; left: 444px; top: 326px; font-size: 18px; }
+.wide .tag { padding: 9px 8px; border-radius: 9px; }
+</style>
+</head>
+<body>
+<div id="bar"><b>Store shots</b><span id="keys"></span><span style="margin-left:auto"><kbd>A</kbd>all · <kbd>←</kbd><kbd>→</kbd>step</span></div>
+<div id="stage"></div>
+<script type="module">
+import { squircleClip } from './js/squircle.js';
+const TAG = '?utm_source=mail&amp;fbclid=Iw4';
+const link = (clean, tag) => `<div class="link">${clean}${tag ? `<span class="tag">${tag}</span>` : ''}</div>`;
+const phone = (shot) => `<div class="phone"><div class="bezel"><img src="ui/${shot}.webp"></div></div>`;
+const COPY = {
+  hero: 'Clean links',
+  copy: 'Copy, paste clean',
+  open: 'Tap, open clean',
+  offline: 'Works offline',
+  free: 'Free, no ads',
+};
+const FRAMES = [
+  { id: 'hero', name: 'Hero', html: () => `<div class="hero"><div class="caption">${COPY.hero}</div><img class="icon" src="icon/bugged-icon-1024.png"><div class="name">Bugged</div>
+    <div class="cards"><div class="card"><div class="label"><span class="sym">link</span>Before</div>${link('example.com/article', TAG)}</div>
+    <div class="card clean"><div class="label"><span class="sym">check_circle</span>After</div>${link('example.com/article')}</div></div></div>` },
+  { id: 'copy', name: 'Copy', html: () => `<div class="caption">${COPY.copy}</div>${phone('home-copy')}
+    <div class="clip"><div class="row"><span class="sym">content_copy</span>${link('example.com/article', TAG)}</div><div class="rule"></div>
+    <div class="row ok"><span class="sym">content_paste</span>${link('example.com/article')}</div></div>` },
+  { id: 'open', name: 'Open', html: () => `<div class="caption">${COPY.open}</div>${phone('home-open')}` },
+  { id: 'offline', name: 'Offline', html: () => `<div class="caption">${COPY.offline}</div>${phone('copy')}` },
+  { id: 'free', name: 'Free', html: () => `<div class="caption">${COPY.free}</div>${phone('about')}` },
+  { id: 'feature', name: 'Feature graphic', wide: true, html: () => `<img class="icon" src="icon/bugged-icon-1024.png"><div class="name">Bugged</div><div class="line">Clean links, no tracking</div>${link('example.com/article', TAG)}` },
+];
+const query = new URLSearchParams(location.search);
+const plain = query.has('plain');
+let current = Math.max(0, FRAMES.findIndex((f) => f.id === query.get('frame')));
+let all = !plain && !query.has('frame');
+document.body.classList.toggle('plain', plain);
+
+function draw() {
+  const stage = document.getElementById('stage');
+  const list = all ? FRAMES : [FRAMES[current]];
+  const room = innerHeight - 110;
+  stage.innerHTML = list.map((f) => {
+    const w = f.wide ? 1024 : 1080, h = f.wide ? 500 : 1920;
+    const scale = plain ? 1 : all ? (f.wide ? 0.42 : 0.3) : Math.min(room / h, (innerWidth - 60) / w);
+    return `<div class="slot" style="width:${w * scale}px;height:${h * scale}px"><div class="frame ${f.wide ? 'wide' : ''}" style="transform:scale(${scale})">${f.html()}</div></div>`;
+  }).join('');
+  stage.querySelectorAll('.bezel, .bezel img').forEach((el) => squircleClip(el));
+  document.getElementById('keys').innerHTML = FRAMES.map((f, i) => `<span class="${!all && i === current ? 'on' : ''}"><kbd>${i + 1}</kbd>${f.name}</span>`).join(' ');
+}
+addEventListener('keydown', (e) => {
+  if (e.key >= '1' && e.key <= String(FRAMES.length)) { current = +e.key - 1; all = false; }
+  else if (e.key === 'a' || e.key === 'A') all = !all;
+  else if (e.key === 'ArrowRight') { current = (current + 1) % FRAMES.length; all = false; }
+  else if (e.key === 'ArrowLeft') { current = (current + FRAMES.length - 1) % FRAMES.length; all = false; }
+  else return;
+  draw();
+});
+addEventListener('resize', draw);
+draw();
+</script>
+</body>
+</html>
