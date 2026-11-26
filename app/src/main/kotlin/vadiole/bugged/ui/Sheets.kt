@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.StateListDrawable
 import android.text.TextUtils
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
@@ -64,7 +65,9 @@ class CopySheet(context: Context, host: Host) : Sheet(context, host.colors, R.st
             background = RoundDrawable(colors.primary, dp(10f))
             importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO
         }
-        addView(index, linear(dp(20), dp(20), end = dp(12)))
+        val size = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 20f, resources.displayMetrics).toInt()
+        (index.background as RoundDrawable).radius = size / 2f
+        addView(index, linear(size, size, end = dp(12)))
         val line: TextView = text(context, Type.bodyMedium, colors.onSurface)
         line.text = label
         addView(line, linear(0, WRAP_CONTENT, weight = 1f))
@@ -79,14 +82,11 @@ class OpenSheet(context: Context, private val host: Host) : Sheet(context, host.
         host.browsers.remember()
         header(colors, content, R.drawable.ic_open_in_new, R.string.open_sheet_title, R.string.open_sheet_what, R.string.open_sheet_never)
         change.setOnClickListener { host.go(Route.Browser) }
-        val row = LinearLayout(context).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
+        change.contentDescription = context.getString(R.string.change_browser)
+        val row = Split(context, label, change, dp(8)).apply {
             minimumHeight = dp(52)
             background = RoundDrawable(colors.surfaceContainerHigh, dp(20f))
             setPaddingRelative(dp(16), dp(2), dp(6), dp(2))
-            addView(label, linear(0, WRAP_CONTENT, weight = 1f, end = dp(8)))
-            addView(change, linear(WRAP_CONTENT, WRAP_CONTENT))
         }
         content.addView(row, linear(top = dp(20)))
         actions(colors, content, R.string.open_sheet_action) { host.requestBrowser() }

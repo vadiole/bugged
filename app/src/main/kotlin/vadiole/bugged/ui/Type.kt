@@ -71,9 +71,10 @@ fun text(context: Context, style: TextStyle, color: Int, resource: Int = 0) = Te
 
 fun Context.withBold(resource: Int, argument: String): CharSequence {
     val template = getString(resource)
-    val at = template.indexOf("%1\$s")
+    val token = if ("%1\$s" in template) "%1\$s" else "%s"
+    val at = template.indexOf(token)
     if (at < 0) return template
-    val result = SpannableString(template.replace("%1\$s", argument))
+    val result = SpannableString(template.replace(token, argument))
     result.setSpan(TypefaceSpan(Typeface.create(Type.plain, 700, false)), at, at + argument.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     return result
 }

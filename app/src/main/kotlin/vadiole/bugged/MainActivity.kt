@@ -13,8 +13,10 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.Parcelable
 import android.os.SystemClock
 import android.provider.Settings
+import android.util.SparseArray
 import android.view.View
 import android.widget.FrameLayout
 import android.window.BackEvent
@@ -51,7 +53,11 @@ class MainActivity : Activity(), Host {
         super.onCreate(savedInstanceState)
         colors = Colors.of(this)
         edgeToEdge()
-        val container = FrameLayout(this)
+        val container = object : FrameLayout(this) {
+            override fun dispatchSaveInstanceState(container: SparseArray<Parcelable>) = Unit
+
+            override fun dispatchRestoreInstanceState(container: SparseArray<Parcelable>) = Unit
+        }
         setContentView(container)
         nav = Nav(container) { route ->
             when (route) {
@@ -95,6 +101,7 @@ class MainActivity : Activity(), Host {
     }
 
     private fun sync() {
+        if (!setup.openOn()) browsers.remember()
         when (nav.current()?.route) {
             Route.Copy -> if (setup.copyOn()) nav.pop()
             Route.Open -> if (setup.openOn()) nav.pop()
@@ -130,6 +137,7 @@ class MainActivity : Activity(), Host {
     override fun requestBrowser() {
         val roles = getSystemService(RoleManager::class.java)
         if (roles.isRoleAvailable(RoleManager.ROLE_BROWSER) && !roles.isRoleHeld(RoleManager.ROLE_BROWSER)) {
+            browsers.remember()
             roleAsked = SystemClock.elapsedRealtime()
             @Suppress("DEPRECATION")
             startActivityForResult(roles.createRequestRoleIntent(RoleManager.ROLE_BROWSER), REQUEST_ROLE)
@@ -216,7 +224,7 @@ class MainActivity : Activity(), Host {
     private companion object {
         const val KEY_NAV = "nav"
         const val REQUEST_ROLE = 1
-        const val DENIED_WITHOUT_ASKING = 400L
+        const val DENIED_WITHOUT_ASKING = 1000L
         const val FRAGMENT_ARG_KEY = ":settings:fragment_args_key"
         const val SHOW_FRAGMENT_ARGS = ":settings:show_fragment_args"
     }

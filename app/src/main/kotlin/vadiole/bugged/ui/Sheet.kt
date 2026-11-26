@@ -9,7 +9,6 @@ import android.view.View
 import android.view.ViewConfiguration
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-import android.view.ViewTreeObserver
 import android.view.animation.PathInterpolator
 import android.widget.Button
 import android.widget.LinearLayout
@@ -80,6 +79,7 @@ abstract class Sheet(context: Context, protected val colors: Colors, title: Int)
     private var dragging = false
     private var nested = false
     private var closing = false
+    private var opening = false
     private var closed: (() -> Unit)? = null
     private var offset = 0f
 
@@ -104,17 +104,18 @@ abstract class Sheet(context: Context, protected val colors: Colors, title: Int)
     fun open() {
         scrim.alpha = 0f
         panel.visibility = INVISIBLE
-        viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
-            override fun onPreDraw(): Boolean {
-                viewTreeObserver.removeOnPreDrawListener(this)
-                panel.visibility = VISIBLE
-                if (closing) return true
-                spring.value = panel.height.toFloat()
-                place(spring.value)
-                spring.animateTo(0f)
-                return true
-            }
-        })
+        opening = true
+    }
+
+    override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+        super.onLayout(changed, left, top, right, bottom)
+        if (!opening) return
+        opening = false
+        panel.visibility = VISIBLE
+        if (closing) return
+        spring.value = panel.height.toFloat()
+        place(spring.value)
+        spring.animateTo(0f)
     }
 
     fun close(onEnd: () -> Unit) {

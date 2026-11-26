@@ -67,3 +67,52 @@ class AppIcon(context: Context) : View(context) {
         canvas.restoreToCount(save)
     }
 }
+
+class Split(context: Context, private val lead: View, private val trail: View, private val gap: Int) : android.view.ViewGroup(context) {
+    private var stacked = false
+
+    init {
+        addView(lead)
+        addView(trail)
+    }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val width = MeasureSpec.getSize(widthMeasureSpec)
+        val inner = width - paddingLeft - paddingRight
+        val free = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
+        val most = MeasureSpec.makeMeasureSpec(inner, MeasureSpec.AT_MOST)
+        val shown = trail.visibility != GONE
+        if (shown) trail.measure(most, free)
+        val trailWidth = if (shown) trail.measuredWidth + gap else 0
+        lead.measure(free, free)
+        stacked = shown && lead.measuredWidth + trailWidth > inner && trail.measuredWidth > inner / 2
+        val room = if (stacked) inner else (inner - trailWidth).coerceAtLeast(0)
+        lead.measure(MeasureSpec.makeMeasureSpec(room, MeasureSpec.AT_MOST), free)
+        val content = when {
+            !shown -> lead.measuredHeight
+            stacked -> lead.measuredHeight + gap + trail.measuredHeight
+            else -> maxOf(lead.measuredHeight, trail.measuredHeight)
+        }
+        setMeasuredDimension(width, maxOf(content + paddingTop + paddingBottom, suggestedMinimumHeight))
+    }
+
+    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+        val rtl = layoutDirection == LAYOUT_DIRECTION_RTL
+        val left = paddingLeft
+        val right = r - l - paddingRight
+        val top = paddingTop
+        val bottom = b - t - paddingBottom
+        if (stacked) {
+            val start = top + (bottom - top - lead.measuredHeight - gap - trail.measuredHeight) / 2
+            place(lead, if (rtl) right - lead.measuredWidth else left, start)
+            place(trail, if (rtl) left else right - trail.measuredWidth, start + lead.measuredHeight + gap)
+        } else {
+            place(lead, if (rtl) right - lead.measuredWidth else left, top + (bottom - top - lead.measuredHeight) / 2)
+            if (trail.visibility != GONE) {
+                place(trail, if (rtl) left else right - trail.measuredWidth, top + (bottom - top - trail.measuredHeight) / 2)
+            }
+        }
+    }
+
+    private fun place(view: View, x: Int, y: Int) = view.layout(x, y, x + view.measuredWidth, y + view.measuredHeight)
+}

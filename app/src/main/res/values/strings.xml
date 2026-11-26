@@ -6,13 +6,23 @@
     <string name="close">Close</string>
     <!-- Accessibility label of the back arrow in the top bar. -->
     <string name="back">Back</string>
+    <!-- Status label on a feature card: the feature is on. -->
     <string name="on">On</string>
+    <!-- Status label on a feature card: the feature is off. -->
     <string name="off">Off</string>
+    <!-- Button on a feature card. -->
     <string name="turn_on">Turn on</string>
+    <!-- Button on a feature card. -->
     <string name="turn_off">Turn off</string>
+    <!-- Screen reader label of the "Turn on" button. %1$s is the feature, "Links you copy" or "Links you open". -->
+    <string name="turn_on_feature">Turn on %1$s</string>
+    <!-- Screen reader label of the "Turn off" button. %1$s is the feature, "Links you copy" or "Links you open". -->
+    <string name="turn_off_feature">Turn off %1$s</string>
     <string name="not_now">Not now</string>
     <!-- Button that opens a list of browsers to pick from. -->
     <string name="change">Change</string>
+    <!-- Screen reader label of the "Change" button. -->
+    <string name="change_browser">Change browser</string>
 
     <!-- First screen. Headline, also the app's slogan. -->
     <string name="welcome_title">Clean your links</string>
@@ -71,7 +81,7 @@
     <string name="about_rate">Rate on Google Play</string>
     <string name="about_feedback">Feedback &amp; ideas</string>
     <string name="about_feedback_note">Report a bug or suggest a feature. I read every email.</string>
-    <string name="about_feedback_subject">Bugged feedback</string>
+    <string name="about_feedback_subject">Feedback and ideas</string>
     <string name="about_author">Designed and developed by @vadiole</string>
     <!-- Accessibility action on the version row. -->
     <string name="about_copy">Copy app and device info</string>

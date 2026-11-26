@@ -2,10 +2,12 @@ package vadiole.bugged.ui
 
 import android.content.Context
 import android.graphics.Color
+import android.os.Build
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import vadiole.bugged.R
@@ -75,7 +77,7 @@ class HomeScreen(context: Context, private val host: Host) : Screen(context, hos
         copy.bind(copying)
         open.bind(opening)
         val browsers = host.browsers.all()
-        val selected = host.browsers.selected()
+        val selected = host.browsers.selected(browsers)
         open.browser(selected?.let { context.withBold(R.string.open_browser, it.label) }, browsers.size > 1)
     }
 }
@@ -101,7 +103,7 @@ class FeatureCard(
     private val off = ActionButton(context, colors, ActionButton.Kind.Text, false, R.string.turn_off)
     private val browserLabel = text(context, Type.bodyMedium, colors.onPrimaryContainer)
     private val change = ActionButton(context, colors, ActionButton.Kind.Tonal, false, R.string.change)
-    private val browserRow = LinearLayout(context)
+    private val browserRow = Split(context, browserLabel, change, dp(8))
     private var active: Boolean? = null
     private var hasBrowser = false
     private val fade = Motion.effectsSlow.animator(0.01f) { shape.color = mixColor(colors.surfaceContainer, colors.primaryContainer, it) }
@@ -111,8 +113,11 @@ class FeatureCard(
         background = shape
         setPadding(dp(20), dp(20), dp(20), dp(16))
         val name = context.getString(title)
-        on.contentDescription = context.getString(R.string.turn_on) + ", " + name
-        off.contentDescription = context.getString(R.string.turn_off) + ", " + name
+        on.contentDescription = context.getString(R.string.turn_on_feature, name)
+        off.contentDescription = context.getString(R.string.turn_off_feature, name)
+        change.contentDescription = context.getString(R.string.change_browser)
+        heading.isAccessibilityHeading = true
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) state.importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO
         on.setOnClickListener { turnOn() }
         off.setOnClickListener { turnOff() }
         off.tint(Color.TRANSPARENT, colors.onPrimaryContainer)
@@ -131,24 +136,17 @@ class FeatureCard(
         addView(head, linear())
         addView(detail, linear(top = dp(10)))
 
-        browserRow.orientation = HORIZONTAL
-        browserRow.gravity = Gravity.CENTER_VERTICAL
         browserRow.minimumHeight = dp(52)
         browserRow.background = RoundDrawable(Color.argb(140, Color.red(colors.surface), Color.green(colors.surface), Color.blue(colors.surface)), dp(20f))
         browserRow.setPaddingRelative(dp(16), dp(2), dp(6), dp(2))
-        browserRow.addView(browserLabel, linear(0, WRAP_CONTENT, weight = 1f, end = dp(8)))
-        browserRow.addView(change, linear(WRAP_CONTENT, WRAP_CONTENT))
         browserRow.visibility = View.GONE
         addView(browserRow, linear(top = dp(14)))
 
-        val foot = LinearLayout(context).apply {
-            orientation = HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            addView(state, linear(0, WRAP_CONTENT, weight = 1f, end = dp(8)))
-            addView(on, linear(WRAP_CONTENT, WRAP_CONTENT))
-            addView(off, linear(WRAP_CONTENT, WRAP_CONTENT))
+        val buttons = FrameLayout(context).apply {
+            addView(on, WRAP_CONTENT, WRAP_CONTENT)
+            addView(off, WRAP_CONTENT, WRAP_CONTENT)
         }
-        addView(foot, linear(top = dp(12)))
+        addView(Split(context, state, buttons, dp(8)), linear(top = dp(12)))
     }
 
     fun bind(value: Boolean) {
@@ -166,6 +164,7 @@ class FeatureCard(
         detail.setTextColor(muted)
         detail.alpha = if (value) 0.8f else 1f
         state.setText(if (value) R.string.on else R.string.off)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) heading.stateDescription = state.text
         state.setTextColor(muted)
         state.setCompoundDrawablesRelative(if (value) check else null, null, null, null)
         on.visibility = if (value) View.GONE else View.VISIBLE

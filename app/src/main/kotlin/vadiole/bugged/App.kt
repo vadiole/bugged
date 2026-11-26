@@ -5,12 +5,15 @@ import android.content.ClipData
 import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.os.Build
+import android.os.SystemClock
 import android.view.textclassifier.TextClassifier
 
 class App : Application() {
     val cleaner by lazy { Cleaner(asset("rules.txt"), asset("redirects.txt")) }
     val browsers by lazy { Browsers(this) }
     val setup by lazy { Setup(this) }
+    private var lastCleaned: String? = null
+    private var lastCleanedAt = 0L
 
     override fun onCreate() {
         super.onCreate()
@@ -34,13 +37,21 @@ class App : Application() {
         }
         description.extras?.let { clip.description.extras = it }
         clipboard.setPrimaryClip(clip)
-        setup.count()
+        count(cleaned)
         return true
     }
 
     fun writeClipboard(text: String) {
         getSystemService(ClipboardManager::class.java)
             .setPrimaryClip(ClipData.newPlainText(getString(R.string.clip_label), text))
+        count(text)
+    }
+
+    private fun count(cleaned: String) {
+        val now = SystemClock.elapsedRealtime()
+        if (cleaned == lastCleaned && now - lastCleanedAt < SAME_COPY) return
+        lastCleaned = cleaned
+        lastCleanedAt = now
         setup.count()
     }
 
@@ -54,6 +65,8 @@ class App : Application() {
     private fun asset(name: String) = assets.open(name).bufferedReader().use { it.readText() }
 
     companion object {
+        private const val SAME_COPY = 5000L
+
         lateinit var instance: App
             private set
     }

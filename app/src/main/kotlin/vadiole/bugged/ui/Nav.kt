@@ -135,17 +135,6 @@ class Nav(private val container: FrameLayout, private val provide: (Route) -> De
             settle(screen, clear)
             return
         }
-        val inFlight = entering
-        if (inFlight != null) {
-            transition?.cancel()
-            entering = null
-            inFlight.isEntering = false
-            stack.remove(inFlight)
-            prune(inFlight)
-            pushFromExit(screen, inFlight)
-            settle(screen, clear)
-            return
-        }
         val previous = stack.lastOrNull()
         stack.add(screen)
         container.addView(screen, matchParent())
