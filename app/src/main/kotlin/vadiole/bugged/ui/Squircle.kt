@@ -9,7 +9,6 @@ import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.math.tan
 
-// https://github.com/vadiole/squircle/blob/main/SquircleDrawable.kt
 internal fun Path.addSquircle(rect: RectF, radius: Float, smoothing: Float = 0.6f) {
     addSquircle(rect.left, rect.top, rect.right, rect.bottom, radius, radius, radius, radius, smoothing)
 }
