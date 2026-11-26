@@ -17,6 +17,4 @@ google-services.json
 CLAUDE.local.md
 .pi/
 node_modules/
-/store/video/out/
-/store/video/icons/
 /store/comments/
