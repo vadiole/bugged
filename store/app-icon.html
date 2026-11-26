@@ -72,13 +72,7 @@ const LOOK_SCHEMA = [
 
 const CONCEPTS = []
 
-const MODULES = [
-    'chrome', 'thermal', 'holo', 'glass-eye', 'xray',
-    'engraving', 'cross-stitch', 'riso', 'linocut', 'stamp',
-    'pixel', 'ascii', 'glitch', 'turing', 'scope',
-    'moire', 'topo', 'neon', 'stained-glass', 'origami', 'constellation', 'inkblot',
-    'clay',
-]
+const MODULES = ['thermal']
 for (const name of MODULES) {
     try {
         const icon = (await import(`./js/icons/${name}.js`)).default
@@ -86,25 +80,6 @@ for (const name of MODULES) {
     } catch (error) {
         console.warn('icon unavailable', name, error)
     }
-}
-
-let beetle = null
-let beetleSchema = []
-let beetleDefaults = {}
-try {
-    const m = await import('./js/beetle.js')
-    beetle = m.createBeetle()
-    beetleSchema = m.BEETLE_SCHEMA
-    beetleDefaults = m.BEETLE_DEFAULTS
-} catch (error) {
-    console.warn('3D beetle unavailable', error)
-}
-if (beetle) {
-    CONCEPTS.unshift({
-        id: 'beetle', name: '3D beetle', note: 'Realistic jewel beetle. Plain, in amber or pinned.', three: true,
-        schema: beetleSchema,
-        defaults: { ...beetleDefaults },
-    })
 }
 
 const KEYS = '1234567890QWERYUIOPAFHJKLZXCVBN'
@@ -122,13 +97,7 @@ function render(concept, S, { background = true, inset = 1 } = {}) {
     const c = canvas.getContext('2d')
     const k = concept.state.values
     try {
-        if (concept.three) {
-            const size = Math.round(S * inset)
-            const shot = beetle.render(size, { ...beetleDefaults, ...k }, { transparent: !background })
-            c.drawImage(shot, (S - size) / 2, (S - size) / 2, size, size)
-        } else {
-            concept.draw(c, S, { ...concept.defaults, ...k })
-        }
+        concept.draw(c, S, { ...concept.defaults, ...k })
     } catch (error) {
         console.error(concept.id, error)
         c.fillStyle = '#400'
