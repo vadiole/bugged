@@ -145,7 +145,7 @@ private class LinkDemo(context: Context, private val colors: Colors) : View(cont
     }
 
     private companion object {
-        const val CLEAN = "shop.com/shoes"
+        const val CLEAN = "example.com/article"
         const val JUNK = "?utm_source=mail&fbclid=Iw4"
     }
 }
