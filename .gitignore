@@ -19,3 +19,4 @@ CLAUDE.local.md
 node_modules/
 /store/video/out/
 /store/video/icons/
+/store/comments/

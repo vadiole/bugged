@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bugged UI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:wght@400..800&family=Roboto+Flex:wght@400..800&family=Roboto+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0..1,0&display=block">
+<style>
+* { box-sizing: border-box; margin: 0; }
+html { background: #101012; color: #e8e8ea; font: 13px/1.4 "Roboto Flex", system-ui, sans-serif; }
+body { padding: 20px 24px 60px; }
+.bar { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: center; margin-bottom: 20px; color: #9a9aa2; }
+.bar b { color: #e8e8ea; font-weight: 600; }
+kbd { display: inline-block; min-width: 20px; padding: 1px 6px; border-radius: 5px; background: #26262b; color: #e8e8ea; font: 500 12px "Roboto Mono", monospace; text-align: center; }
+.board { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; }
+.col h2 { font: 500 12px "Roboto Mono", monospace; color: #9a9aa2; margin-bottom: 8px; }
+
+.phone { position: relative; width: 360px; height: 780px; border-radius: 36px; overflow: hidden; background: var(--surface); color: var(--onSurface); font: 400 14px/20px "Google Sans Flex", "Roboto Flex", sans-serif; outline: 1px solid #2c2c33; display: flex; flex-direction: column; }
+.status { height: 40px; flex: none; }
+.nav { height: 24px; flex: none; display: grid; place-items: center; }
+.nav::after { content: ""; width: 108px; height: 4px; border-radius: 2px; background: var(--onSurface); opacity: .8; }
+.scroll { flex: 1; overflow: auto; scrollbar-width: none; padding: 0 16px 16px; }
+.sym { font-family: "Material Symbols Rounded"; font-size: 24px; line-height: 1; font-variation-settings: "FILL" 1; user-select: none; }
+
+.display { font: 500 36px/44px "Google Sans Flex", "Roboto Flex", sans-serif; letter-spacing: -.01em; }
+.headline { font: 500 28px/36px "Google Sans Flex", "Roboto Flex", sans-serif; }
+.title { font: 500 22px/28px "Google Sans Flex", "Roboto Flex", sans-serif; }
+.body-l { font-size: 16px; line-height: 24px; }
+.muted { color: var(--onSurfaceVariant); }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; cursor: pointer; font: 600 14px/20px "Google Sans Flex", "Roboto Flex", sans-serif; height: 40px; padding: 0 20px; border-radius: 20px; background: var(--primary); color: var(--onPrimary); transition: border-radius .35s cubic-bezier(.3, 1.5, .5, 1), transform .2s; }
+.btn:active { border-radius: 10px; }
+.btn.tonal { background: var(--secondaryContainer); color: var(--onSecondaryContainer); }
+.btn.text { background: none; color: var(--primary); }
+.btn.big { height: 56px; padding: 0 28px; border-radius: 28px; font-size: 16px; width: 100%; }
+.btn.big:active { border-radius: 16px; }
+.btn .sym { font-size: 20px; }
+.iconbtn { width: 48px; height: 48px; border: 0; border-radius: 24px; background: none; color: var(--onSurfaceVariant); cursor: pointer; display: grid; place-items: center; transition: border-radius .35s cubic-bezier(.3, 1.5, .5, 1), background .15s; }
+.iconbtn:active { border-radius: 14px; background: var(--surfaceContainerHigh); }
+
+.welcome { display: flex; flex-direction: column; height: 100%; padding: 8px 8px 0; }
+.hero { width: 172px; height: 172px; margin: 12px 0 24px -6px; position: relative; }
+.hero .shape { position: absolute; inset: 0; background: var(--primaryContainer); animation: spin 40s linear infinite; }
+.hero img { position: absolute; inset: 34px; width: 104px; height: 104px; border-radius: 42%; corner-shape: squircle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.demo { margin-top: 24px; padding: 14px 16px; border-radius: 20px; background: var(--surfaceContainer); font: 500 12px/20px "Roboto Mono", monospace; white-space: nowrap; overflow: hidden; display: flex; }
+.demo .junk { display: inline-block; overflow: hidden; max-width: 260px; color: var(--onErrorContainer); background: var(--errorContainer); border-radius: 6px; animation: cut 5s cubic-bezier(.3, 0, 0, 1) infinite; }
+@keyframes cut { 0%, 35% { max-width: 260px; opacity: 1; } 50%, 90% { max-width: 0; opacity: 0; } 100% { max-width: 260px; opacity: 1; } }
+.facts { margin-top: 20px; display: grid; gap: 14px; }
+.fact { display: flex; gap: 14px; align-items: flex-start; }
+.fact .sym { color: var(--primary); flex: none; }
+.spacer { flex: 1; min-height: 16px; }
+
+.top { display: flex; align-items: center; justify-content: space-between; height: 56px; padding-left: 8px; margin: 0 -8px; }
+.status-line { padding: 12px 8px 24px; }
+.card { border-radius: 28px; background: var(--surfaceContainer); padding: 20px; margin-bottom: 8px; transition: background .3s; }
+.card.on { background: var(--primaryContainer); color: var(--onPrimaryContainer); }
+.card.on .muted { color: var(--onPrimaryContainer); opacity: .8; }
+.card .head { display: flex; gap: 14px; align-items: center; margin-bottom: 10px; }
+.badge { width: 48px; height: 48px; flex: none; display: grid; place-items: center; background: var(--surfaceContainerHighest); color: var(--onSurfaceVariant); transition: background .3s; }
+.on .badge { background: var(--primary); color: var(--onPrimary); }
+.card .foot { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; min-height: 40px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.pill .sym { font-size: 18px; }
+.sub { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding: 6px 6px 6px 16px; border-radius: 20px; background: color-mix(in srgb, var(--surface) 55%, transparent); }
+.tip { display: flex; gap: 14px; align-items: center; padding: 18px 20px; }
+.tip .sym { color: var(--onSurfaceVariant); }
+
+.list { display: grid; gap: 2px; margin-bottom: 16px; }
+.item { display: flex; gap: 14px; align-items: center; padding: 16px; background: var(--surfaceContainer); border-radius: 4px; min-height: 72px; cursor: pointer; }
+.item:first-child { border-radius: 24px 24px 4px 4px; }
+.item:last-child { border-radius: 4px 4px 24px 24px; }
+.item:only-child { border-radius: 24px; }
+.item .grow { flex: 1; }
+.item .t { font: 500 16px/22px "Google Sans Flex", "Roboto Flex", sans-serif; }
+.switch { width: 52px; height: 32px; flex: none; border-radius: 16px; border: 2px solid var(--outline); background: var(--surfaceContainerHighest); position: relative; transition: background .2s, border-color .2s; }
+.switch i { position: absolute; top: 6px; left: 6px; width: 16px; height: 16px; border-radius: 12px; background: var(--outline); display: grid; place-items: center; transition: all .35s cubic-bezier(.3, 1.4, .5, 1); }
+.switch i .sym { font-size: 16px; opacity: 0; color: var(--onPrimaryContainer); }
+.switch.on { background: var(--primary); border-color: var(--primary); }
+.switch.on i { left: 22px; top: 2px; width: 24px; height: 24px; background: var(--onPrimary); }
+.switch.on i .sym { opacity: 1; }
+.foot-note { padding: 0 16px 16px; font-size: 13px; }
+
+.scrim { position: absolute; inset: 0; background: rgb(0 0 0 / .45); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; background: var(--surfaceContainerLow); padding: 0 24px 40px; }
+.sheet::before { content: ""; display: block; width: 32px; height: 4px; border-radius: 2px; background: var(--outline); opacity: .6; margin: 16px auto 20px; }
+.sheet .badge { background: var(--primaryContainer); color: var(--onPrimaryContainer); margin-bottom: 16px; }
+.sheet p { margin-top: 12px; }
+.steps { margin-top: 16px; padding: 14px 16px; border-radius: 20px; background: var(--surfaceContainerHigh); display: grid; gap: 8px; }
+.steps div { display: flex; gap: 12px; }
+.steps div > b { width: 20px; height: 20px; flex: none; border-radius: 10px; background: var(--primary); color: var(--onPrimary); font-size: 12px; display: grid; place-items: center; }
+.actions { display: grid; gap: 4px; margin-top: 24px; }
+.radio { display: flex; align-items: center; gap: 14px; padding: 12px 4px; }
+.radio i { width: 20px; height: 20px; border-radius: 10px; border: 2px solid var(--onSurfaceVariant); display: grid; place-items: center; }
+.radio.sel i { border-color: var(--primary); }
+.radio.sel i::after { content: ""; width: 10px; height: 10px; border-radius: 5px; background: var(--primary); }
+
+.about-icon { width: 96px; height: 96px; border-radius: 42%; corner-shape: squircle; display: block; margin: 8px auto 28px; }
+.chev { color: var(--onSurfaceVariant); font-variation-settings: "FILL" 0; }
+
+.col { position: relative; }
+body.commenting .col { cursor: crosshair; }
+body.commenting .col * { cursor: crosshair !important; }
+.mode { padding: 2px 10px; border-radius: 10px; background: #ffd24a; color: #111; font-weight: 600; display: none; }
+body.commenting .mode { display: inline; }
+.pin { touch-action: none; user-select: none; position: absolute; z-index: 5; width: 28px; height: 28px; margin: -28px 0 0 0; border-radius: 14px 14px 14px 0; background: #ffd24a; color: #111; font: 600 13px/28px "Roboto Flex", sans-serif; text-align: center; cursor: pointer; box-shadow: 0 2px 8px rgb(0 0 0 / .5); }
+.pin.done { background: #5a5a62; color: #e8e8ea; }
+.note { cursor: grab; position: absolute; z-index: 6; width: 260px; padding: 10px; border-radius: 14px; background: #26262b; box-shadow: 0 8px 28px rgb(0 0 0 / .6); }
+.note textarea { width: 100%; min-height: 70px; resize: vertical; border: 0; outline: 0; border-radius: 8px; padding: 8px; background: #16161a; color: #e8e8ea; font: 13px/1.4 "Roboto Flex", sans-serif; }
+.note .reply { margin-top: 8px; padding: 8px; border-radius: 8px; background: #1d2a22; color: #cfe9d6; white-space: pre-wrap; }
+.note .row { display: flex; gap: 6px; justify-content: flex-end; margin-top: 8px; }
+.note button { border: 0; border-radius: 8px; padding: 5px 10px; background: #3a3a42; color: #e8e8ea; font: 500 12px "Roboto Flex", sans-serif; cursor: pointer; }
+.note button.save { background: #ffd24a; color: #111; }
+.msg { margin-bottom: 8px; padding: 8px; border-radius: 8px; background: #16161a; white-space: pre-wrap; }
+.msg b { display: block; font-size: 11px; color: #9a9aa2; margin-bottom: 2px; }
+.msg.claude { background: #1d2a22; }
+.pin.unread::after { content: ""; position: absolute; top: -3px; right: -3px; width: 10px; height: 10px; border-radius: 5px; background: #ff5a4f; }
+.note { max-height: 520px; overflow: auto; }
+.pin .keys { position: absolute; left: 26px; top: 2px; display: flex; gap: 3px; }
+.pin .keys kbd { background: #ffd24a; color: #111; box-shadow: 0 2px 8px rgb(0 0 0 / .5); }
+.pin.glow { outline: 3px solid #fff; transform: scale(1.25); }
+.bar .linked { color: #ffd24a; }
+.bar .ref { display: inline-block; min-width: 18px; padding: 0 5px; border-radius: 9px 9px 9px 0; background: #ffd24a; color: #111; font-weight: 600; text-align: center; }
+.note .hint { margin-bottom: 8px; color: #ffd24a; }
+</style>
+</head>
+<body>
+<div class="bar">
+  <span><kbd>T</kbd> light / dark</span>
+  <span><kbd>P</kbd> wallpaper colour <b id="seedName"></b></span>
+  <span><kbd>H</kbd> welcome headline <b id="headName"></b></span>
+  <span><kbd>Q</kbd> copied on/off</span>
+  <span><kbd>W</kbd> opened on/off</span>
+  <span><kbd>N</kbd> links cleaned: 0, 1, 128, 12,480</span>
+  <span><kbd>R</kbd> installed from a file, not Play</span>
+  <span><kbd>L</kbd> one browser / several</span>
+  <span><kbd>V</kbd> show resolved comments</span>
+  <span><kbd>C</kbd> comment <b class="mode">click to comment</b></span>
+</div>
+<div class="board" id="board"></div>
+
+<script type="module">
+import { Hct, SchemeTonalSpot, MaterialDynamicColors, argbFromHex, hexFromArgb } from 'https://cdn.jsdelivr.net/npm/@material/material-color-utilities@0.3.0/+esm';
+
+const seeds = [['thermal purple', '#6a2bd9'], ['ember', '#d9641a'], ['moss', '#3f7d4e'], ['sea', '#2f6fd6'], ['rose', '#c2477a'], ['grey', '#7a7a80']];
+const roles = ['primary', 'onPrimary', 'primaryContainer', 'onPrimaryContainer', 'secondaryContainer', 'onSecondaryContainer', 'surface', 'surfaceContainerLow', 'surfaceContainer', 'surfaceContainerHigh', 'surfaceContainerHighest', 'onSurface', 'onSurfaceVariant', 'outline', 'outlineVariant', 'errorContainer', 'onErrorContainer'];
+const body = 'Many links carry a tag that tells sites who shared them and what you tapped. Bugged protects your privacy by cutting it off. The link opens the same page.';
+const headlines = [
+  ['Clean your links', body],
+  ['Links, cleaned', body],
+  ['Say no to trackers', body],
+  ['Links without a trail', body],
+];
+const setups = ['Bugged needs Accessibility to detect and clean links you copy.'];
+const state = { count: 0, many: true, setup: 0, dark: true, seed: 0, home: 1, headline: 0, copied: false, opened: false, restricted: true };
+try { Object.assign(state, JSON.parse(localStorage.getItem('bugged-lab:ui-8') || '{}')); } catch (_) {}
+state.headline %= headlines.length;
+
+const sym = (name) => `<span class="sym">${name}</span>`;
+const cookie = (points, depth) => {
+  const out = [];
+  for (let i = 0; i < 180; i++) {
+    const a = i / 180 * Math.PI * 2;
+    const r = 50 * (1 - depth + depth * Math.cos(a * points));
+    out.push(`${(50 + r * Math.cos(a)).toFixed(2)}% ${(50 + r * Math.sin(a)).toFixed(2)}%`);
+  }
+  return `polygon(${out.join(',')})`;
+};
+const frame = (name, inner, overlay = '') => `<div class="col" data-name="${name}"><h2>${name}</h2><div class="phone"><div class="status"></div>${inner}<div class="nav"></div>${overlay}</div></div>`;
+
+function welcome() {
+  const [title, body] = headlines[state.headline];
+  return frame('Welcome', `<div class="scroll"><div class="welcome">
+    <div class="hero"><div class="shape" style="clip-path:${cookie(9, .07)}"></div><img src="icon/bugged-icon-1024.png" alt=""></div>
+    <div class="display">${title}</div>
+    <p class="body-l muted" style="margin-top:12px">${body}</p>
+    <div class="demo"><span>shop.com/shoes</span><span class="junk">?utm_source=mail&amp;fbclid=Iw4</span></div>
+    <div class="facts">
+      <div class="fact">${sym('wifi_off')}<div>Works offline. Bugged has no internet access, so nothing leaves your phone.</div></div>
+      <div class="fact">${sym('toggle_on')}<div>${setups[state.setup]}</div></div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn big">Set up</button>
+  </div></div>`);
+}
+
+function statusText() {
+  if (state.copied && state.opened) return 'Cleaning links you copy and open';
+  if (state.copied) return 'Cleaning links you copy';
+  if (state.opened) return 'Cleaning links you open';
+  return 'Choose what to clean';
+}
+
+const counts = [0, 1, 128, 12480];
+function headline() {
+  const count = counts[state.count];
+  if (!count || !(state.copied || state.opened)) return `<div class="status-line display">${statusText()}</div>`;
+  const label = count === 1 ? '1 link cleaned' : `${count.toLocaleString('en-US')} links cleaned`;
+  return `<div class="status-line"><div class="display">${label}</div><div class="body-l muted" style="margin-top:8px">${statusText()}</div></div>`;
+}
+const top = () => `<div class="top"><span class="title">Bugged</span><button class="iconbtn" aria-label="About"><span class="sym" style="font-variation-settings:'FILL' 0">info</span></button></div>`;
+const tip = `<div class="tip">${sym('text_select_end')}<div class="muted">Works on selected text too. Select a link, then tap <b>Clean link</b> in the menu.</div></div>`;
+
+function homeCards() {
+  const card = (key, icon, title, text, extra = '') => `<div class="card ${state[key] ? 'on' : ''}">
+    <div class="head"><div class="badge" style="clip-path:${cookie(9, .07)}">${sym(icon)}</div><div class="title">${title}</div></div>
+    <div class="muted">${text}</div>
+    ${state[key] ? extra : ''}
+    <div class="foot">${state[key]
+      ? `<span class="pill">${sym('check_circle')} On</span><button class="btn text" data-toggle="${key}" style="color:inherit">Turn off</button>`
+      : `<span class="pill muted">Off</span><button class="btn" data-toggle="${key}">Turn on</button>`}</div>
+  </div>`;
+  return `<div class="scroll">${top()}${headline()}
+    ${card('copied', 'content_copy', 'Links you copy', 'Copy a link in any app and paste it clean.')}
+    ${card('opened', 'open_in_new', 'Links you open', 'Tap a link in any app and it opens clean in your browser.', `<div class="sub" style="min-height:52px"><span>Opens in <b>Chrome</b></span>${state.many ? '<button class="btn tonal">Change</button>' : ''}</div>`)}
+    </div>`;
+}
+
+const home = homeCards;
+
+const sheetBadge = (icon) => `<div class="badge" style="width:64px;height:64px;clip-path:${cookie(9, .07)}">${sym(icon)}</div>`;
+const browserChoice = () => `<div class="sub" style="background:var(--surfaceContainerHigh);margin-top:20px;min-height:52px"><span>Clean links open in <b>Chrome</b></span>${state.many ? '<button class="btn tonal">Change</button>' : ''}</div>`;
+
+const sheetCopy = () => `<div class="scrim"></div><div class="sheet">
+  ${sheetBadge('content_copy')}
+  <div class="headline">Clean links you copy</div>
+  <p class="muted">Bugged uses Accessibility to detect links you copy, so it can clean them when a tracker is present.</p>
+  <p class="muted">The app only looks at Copy buttons you tap and the text you copy. It never reads anything else on your screen.</p>
+  <div class="steps"><div><b>1</b><span>In Settings, tap <b>Bugged</b></span></div><div><b>2</b><span>Turn on <b>Use Bugged</b></span></div></div>
+  ${state.restricted ? `<p class="muted" style="font-size:13px">If Settings says “Restricted setting”, open Bugged’s App info, tap the 3 dots, then <b>Allow restricted settings</b>.</p>` : ''}
+  <div class="actions"><button class="btn big">Open Settings</button><button class="btn big text">Not now</button></div>
+</div>`;
+
+const sheetOpen = () => `<div class="scrim"></div><div class="sheet">
+  ${sheetBadge('open_in_new')}
+  <div class="headline">Clean links you open</div>
+  <p class="muted">Make Bugged your default browser app and pick the browser that opens the clean links. Bugged cleans each link you tap and passes it on.</p>
+  <p class="muted">Bugged never loads the page itself.</p>
+  ${browserChoice()}
+  <div class="actions"><button class="btn big">Set as default</button><button class="btn big text">Not now</button></div>
+</div>`;
+
+function about() {
+  const row = (title, value = '') => `<div class="item"><div class="grow t">${title}</div>${value ? `<span class="muted">${value}</span>` : `<span class="sym chev">chevron_right</span>`}</div>`;
+  return frame('About', `<div class="scroll"><div class="top" style="justify-content:flex-start;padding-left:0;gap:4px"><button class="iconbtn"><span class="sym">arrow_back</span></button><span class="title">About</span></div>
+    <img class="about-icon" src="icon/bugged-icon-1024.png" alt="">
+    <div class="list">${row('App version', '0.1.0 (1)')}${row('Privacy policy')}</div>
+    <div class="list" style="margin-bottom:8px">${row('Rate on Google Play')}${row('Feedback &amp; ideas')}</div>
+    <div class="foot-note muted">Report a bug or suggest a feature. I read every email.</div>
+    <div class="list">${row('Designed and developed by @vadiole')}</div>
+  </div>`);
+}
+
+function colours() {
+  const scheme = new SchemeTonalSpot(Hct.fromInt(argbFromHex(seeds[state.seed][1])), state.dark, 0);
+  for (const role of roles) document.documentElement.style.setProperty(`--${role}`, hexFromArgb(MaterialDynamicColors[role].getArgb(scheme)));
+}
+
+function render() {
+  colours();
+  document.getElementById('headName').textContent = `${state.headline + 1}/${headlines.length}`;
+  document.getElementById('seedName').textContent = seeds[state.seed][0];
+  document.getElementById('board').innerHTML = [
+    welcome(),
+    frame('Home', home()),
+    frame('Turn on: links you copy', home(), sheetCopy()),
+    frame('Turn on: links you open', home(), sheetOpen()),
+    about(),
+  ].join('');
+  try { localStorage.setItem('bugged-lab:ui-8', JSON.stringify(state)); } catch (_) {}
+  pins();
+}
+
+let comments = [];
+let commenting = false;
+let editing = null;
+let showDone = false;
+const keysOf = {};
+let offset = { id: null, x: 0, y: 0 };
+let closeNote = null;
+const url = '/comments/app-ui.json';
+const escape = (text) => text.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+const thread = (comment) => comment.messages ? comment : { ...comment, messages: comment.text ? [{ by: 'you', text: comment.text }] : [] };
+const latest = () => fetch(url).then((response) => response.ok ? response.json() : []).then((list) => list.map(thread)).catch(() => comments);
+const seenKey = (comment) => `bugged-lab:seen:${comment.id}`;
+const unread = (comment) => {
+  const last = comment.messages.at(-1);
+  let seen = 0;
+  try { seen = +localStorage.getItem(seenKey(comment)) || 0; } catch (_) {}
+  return last && last.by === 'claude' && comment.messages.length > seen;
+};
+
+async function change(id, apply) {
+  const fresh = await latest();
+  let comment = fresh.find((other) => other.id === id);
+  if (!comment) { comment = comments.find((other) => other.id === id); if (comment) fresh.push(comment); }
+  if (comment) apply(comment, fresh);
+  comments = fresh.filter((other) => other.messages.length);
+  await fetch(url, { method: 'POST', body: JSON.stringify(comments) });
+  pins();
+}
+
+function legend() {
+  const open = new Map();
+  comments.forEach((comment, index) => { if (!comment.done) (keysOf[comment.id] || []).forEach((key) => open.set(key, { number: index + 1, id: comment.id })); });
+  document.querySelectorAll('.bar > span').forEach((item) => {
+    item.querySelector('.ref')?.remove();
+    const link = open.get(item.querySelector('kbd')?.textContent);
+    item.classList.toggle('linked', !!link);
+    item.onmouseenter = item.onmouseleave = null;
+    if (!link) return;
+    item.insertAdjacentHTML('beforeend', ` <span class="ref">${link.number}</span>`);
+    item.onmouseenter = () => document.querySelector(`.pin[data-id="${link.id}"]`)?.classList.add('glow');
+    item.onmouseleave = () => document.querySelector(`.pin[data-id="${link.id}"]`)?.classList.remove('glow');
+  });
+}
+
+function pins() {
+  legend();
+  closeNote = null;
+  document.querySelectorAll('.pin, .note').forEach((node) => node.remove());
+  comments.forEach((comment, index) => {
+    const col = document.querySelector(`.col[data-name="${comment.frame}"]`);
+    if (!col || (comment.done && !showDone && editing !== comment.id)) return;
+    const pin = document.createElement('div');
+    pin.className = `pin ${comment.done ? 'done' : ''} ${unread(comment) ? 'unread' : ''}`;
+    pin.textContent = index + 1;
+    const keys = comment.done ? [] : keysOf[comment.id] || [];
+    if (keys.length) pin.insertAdjacentHTML('beforeend', `<span class="keys">${keys.map((key) => `<kbd>${key}</kbd>`).join('')}</span>`);
+    pin.dataset.id = comment.id;
+    pin.style.left = `${comment.x}px`;
+    pin.style.top = `${comment.y}px`;
+    pin.onclick = (event) => event.stopPropagation();
+    pin.onpointerdown = (down) => {
+      down.preventDefault();
+      pin.setPointerCapture(down.pointerId);
+      const start = { x: comment.x, y: comment.y };
+      let moved = false;
+      pin.onpointermove = (move) => {
+        const dx = move.clientX - down.clientX;
+        const dy = move.clientY - down.clientY;
+        if (!moved && Math.hypot(dx, dy) < 4) return;
+        moved = true;
+        comment.x = Math.round(start.x + dx);
+        comment.y = Math.round(start.y + dy);
+        pin.style.left = `${comment.x}px`;
+        pin.style.top = `${comment.y}px`;
+      };
+      pin.onpointerup = () => {
+        pin.onpointermove = pin.onpointerup = null;
+        if (moved) {
+          const { x, y } = comment;
+          if (comment.messages.length) change(comment.id, (target) => { target.x = x; target.y = y; }); else pins();
+        } else if (editing === comment.id) {
+          closeNote?.();
+        } else {
+          closeNote?.();
+          editing = comment.id;
+          pins();
+        }
+      };
+    };
+    col.append(pin);
+    if (editing !== comment.id) return;
+    try { localStorage.setItem(seenKey(comment), comment.messages.length); } catch (_) {}
+    pin.classList.remove('unread');
+    const note = document.createElement('div');
+    note.className = 'note';
+    if (offset.id !== comment.id) offset = { id: comment.id, x: 0, y: 0 };
+    const place = () => {
+      note.style.left = `${Math.min(comment.x + 20, 110) + offset.x}px`;
+      note.style.top = `${comment.y + 6 + offset.y}px`;
+    };
+    place();
+    note.onpointerdown = (down) => {
+      if (down.target.closest('textarea, button')) return;
+      down.preventDefault();
+      note.setPointerCapture(down.pointerId);
+      const start = { ...offset };
+      note.onpointermove = (move) => { offset.x = start.x + move.clientX - down.clientX; offset.y = start.y + move.clientY - down.clientY; place(); };
+      note.onpointerup = () => { note.onpointermove = note.onpointerup = null; };
+    };
+    note.innerHTML = `${keys.length ? `<div class="hint">Press ${keys.map((key) => `<kbd>${key}</kbd>`).join(' or ')} to compare the options</div>` : ''}${comment.messages.map((message) => `<div class="msg ${message.by}"><b>${message.by === 'claude' ? 'Claude' : 'You'}</b>${escape(message.text)}</div>`).join('')}
+      <textarea placeholder="${comment.messages.length ? 'Reply' : 'Comment'}, Enter to send"></textarea>
+      <div class="row"><button class="del">Delete</button>${comment.messages.length ? `<button class="done">${comment.done ? 'Reopen' : 'Resolve'}</button>` : ''}<button class="save">Send</button></div>`;
+    note.onclick = (event) => event.stopPropagation();
+    const area = note.querySelector('textarea');
+    const send = () => {
+      const text = area.value.trim();
+      editing = text && comment.messages.length ? comment.id : null;
+      change(comment.id, (target) => { if (text) { target.messages.push({ by: 'you', text, at: new Date().toISOString() }); target.done = false; } });
+    };
+    area.onkeydown = (event) => {
+      event.stopPropagation();
+      if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); send(); }
+      if (event.key === 'Escape') { editing = null; change(comment.id, () => {}); }
+    };
+    closeNote = () => {
+      closeNote = null;
+      const text = area.value.trim();
+      editing = null;
+      if (text || !comment.messages.length) change(comment.id, (target) => { if (text) { target.messages.push({ by: 'you', text, at: new Date().toISOString() }); target.done = false; } });
+      else pins();
+    };
+    note.querySelector('.save').onclick = send;
+    note.querySelector('.del').onclick = () => { editing = null; change(comment.id, (target) => { target.messages = []; }); };
+    const done = note.querySelector('.done');
+    if (done) done.onclick = () => { editing = null; change(comment.id, (target) => { target.done = !target.done; }); };
+    col.append(note);
+    area.focus();
+  });
+}
+
+document.addEventListener('click', (event) => {
+  if (event.target.closest('.pin, .note')) return;
+  if (editing !== null && closeNote) { event.stopPropagation(); event.preventDefault(); closeNote(); return; }
+  if (!commenting) return;
+  const col = event.target.closest('.col');
+  if (!col) return;
+  event.stopPropagation();
+  event.preventDefault();
+  const box = col.getBoundingClientRect();
+  const comment = {
+    id: Date.now(),
+    frame: col.dataset.name,
+    x: Math.round(event.clientX - box.left),
+    y: Math.round(event.clientY - box.top),
+    on: event.target.textContent.trim().replace(/\s+/g, ' ').slice(0, 80),
+    state: { ...state },
+    messages: [],
+  };
+  comments = comments.filter((other) => other.messages.length);
+  comments.push(comment);
+  editing = comment.id;
+  pins();
+}, true);
+
+async function poll() {
+  if (editing === null || !document.querySelector('.note textarea')?.value) {
+    const fresh = await latest();
+    if (JSON.stringify(fresh) !== JSON.stringify(comments.filter((other) => other.messages.length))) {
+      const draft = comments.find((other) => other.id === editing && !other.messages.length);
+      comments = draft ? [...fresh, draft] : fresh;
+      pins();
+    }
+  }
+  setTimeout(poll, 2000);
+}
+poll();
+
+document.addEventListener('keydown', (event) => {
+  if (event.metaKey || event.ctrlKey || event.altKey) return;
+  const key = event.key.toLowerCase();
+  if (key === 'v') { showDone = !showDone; pins(); return; }
+  if (key === 'c') { commenting = !commenting; document.body.classList.toggle('commenting', commenting); return; }
+  if (key === 't') state.dark = !state.dark;
+  else if (key === 'p') state.seed = (state.seed + 1) % seeds.length;
+  else if (key === 'h') state.headline = (state.headline + 1) % headlines.length;
+  else if (key === 'q') state.copied = !state.copied;
+  else if (key === 'w') state.opened = !state.opened;
+  else if (key === 'l') state.many = !state.many;
+  else if (key === 'n') state.count = (state.count + 1) % counts.length;
+  else if (key === 'r') state.restricted = !state.restricted;
+  else return;
+  render();
+});
+render();
+</script>
+</body>
+</html>
