@@ -2,7 +2,7 @@
 
 An Android app that removes tracking tags from links you copy and open. Many links carry a tag that tells sites who shared them and what you tapped. Bugged cuts it off, and the link opens the same page.
 
-<img width="240" alt="home-open" src="store/ui/home-open.webp" /> <img width="240" alt="copy" src="store/ui/copy.webp" /> <img width="240" alt="home-copy" src="store/ui/home-copy.webp" /> 
+<img width="200" alt="Welcome screen" src="store/readme/welcome.webp" /> <img width="200" alt="Home with both cleaners off" src="store/readme/home-off.webp" /> <img width="200" alt="Prompt to turn on cleaning for links you copy" src="store/readme/copy.webp" /> <img width="200" alt="Home with links you copy turned on" src="store/readme/home-copy.webp" />
 
 #### Links you copy
 
