@@ -132,7 +132,11 @@ class BrowserSheet(context: Context, host: Host) : Sheet(context, host.colors, R
                 setPaddingRelative(dp(16), 0, dp(24), 0)
                 isChecked = browser.packageName == selected
                 background = ripple(colors.onSurface, null, ColorDrawable(Color.WHITE))
-                setOnClickListener {
+                setOnClickListener { picked ->
+                    for (index in 0 until content.childCount) {
+                        val other = content.getChildAt(index)
+                        if (other is RadioButton) other.isChecked = other === picked
+                    }
                     host.browsers.select(browser)
                     dismiss()
                 }

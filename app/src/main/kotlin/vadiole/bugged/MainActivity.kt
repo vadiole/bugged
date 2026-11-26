@@ -192,7 +192,6 @@ class MainActivity : Activity(), Host {
             @Suppress("DEPRECATION")
             window.navigationBarColor = Color.TRANSPARENT
         }
-        window.isNavigationBarContrastEnforced = false
     }
 
     private fun updateBack() {

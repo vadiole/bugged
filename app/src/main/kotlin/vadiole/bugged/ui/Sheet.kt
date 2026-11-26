@@ -2,6 +2,7 @@ package vadiole.bugged.ui
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Color
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.VelocityTracker
@@ -20,6 +21,12 @@ import kotlin.math.min
 // https://m3.material.io/components/bottom-sheets/specs
 abstract class Sheet(context: Context, protected val colors: Colors, title: Int) : Destination(context) {
     var dismiss: () -> Unit = {}
+
+    var dim = true
+        set(value) {
+            field = value
+            scrim.setBackgroundColor(if (value) colors.scrim else Color.TRANSPARENT)
+        }
 
     protected val content = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL }
 
@@ -141,10 +148,21 @@ abstract class Sheet(context: Context, protected val colors: Colors, title: Int)
         panel.pivotY = height
         panel.scaleX = 1f - min(dp(BACK_SHRINK_X), width / 4f) * eased / width
         panel.scaleY = 1f - min(dp(BACK_SHRINK_Y), height / 4f) * eased / height
+        keepRatio()
     }
 
     fun backCancel() {
-        panel.animate().scaleX(1f).scaleY(1f).setDuration(200L).setInterpolator(Motion.emphasized).start()
+        panel.animate().scaleX(1f).scaleY(1f).setDuration(200L).setInterpolator(Motion.emphasized).setUpdateListener { keepRatio() }.start()
+    }
+
+    // https://github.com/material-components/material-components-android/blob/master/lib/java/com/google/android/material/motion/MaterialBottomContainerBackHelper.java
+    private fun keepRatio() {
+        val ratio = if (panel.scaleY > 0f) panel.scaleX / panel.scaleY else 1f
+        for (index in 0 until panel.childCount) {
+            val child = panel.getChildAt(index)
+            child.pivotY = -child.top.toFloat()
+            child.scaleY = ratio
+        }
     }
 
     private fun slide(target: Float) {

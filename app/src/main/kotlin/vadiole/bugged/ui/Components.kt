@@ -19,10 +19,10 @@ import android.widget.TextView
 import kotlin.math.max
 
 // https://m3.material.io/components/buttons/specs
-class ActionButton(context: Context, colors: Colors, kind: Kind, large: Boolean, label: Int) : Button(context, null, 0) {
+class ActionButton(context: Context, private val colors: Colors, kind: Kind, large: Boolean, label: Int) : Button(context, null, 0) {
     enum class Kind { Filled, Tonal, Text }
 
-    private val shape = RoundDrawable()
+    private val shape = RoundDrawable(smooth = true)
     private val rest = dp(if (large) 28f else 20f)
     private val squeezed = dp(if (large) 12f else 8f)
     private val morph = Motion.effectsDefault.animator(0.5f, rest) {
@@ -30,6 +30,8 @@ class ActionButton(context: Context, colors: Colors, kind: Kind, large: Boolean,
         invalidateOutline()
     }
     private var ready = false
+    private var container = Color.TRANSPARENT
+    private var content = Color.TRANSPARENT
 
     init {
         ready = true
@@ -59,9 +61,21 @@ class ActionButton(context: Context, colors: Colors, kind: Kind, large: Boolean,
     }
 
     fun tint(container: Int, content: Int) {
-        setTextColor(content)
-        shape.color = container
+        this.container = container
+        this.content = content
         background = LayerDrawable(arrayOf(shape, ripple(content, null, ColorDrawable(Color.WHITE))))
+        paint()
+    }
+
+    override fun setEnabled(enabled: Boolean) {
+        super.setEnabled(enabled)
+        if (ready) paint()
+    }
+
+    private fun paint() {
+        val ink = colors.onSurface and 0xFFFFFF
+        setTextColor(if (isEnabled) content else ink or (0x61 shl 24))
+        shape.color = if (isEnabled || Color.alpha(container) == 0) container else ink or (0x1A shl 24)
     }
 
     override fun drawableStateChanged() {
@@ -84,7 +98,7 @@ class ActionButton(context: Context, colors: Colors, kind: Kind, large: Boolean,
 
 // https://m3.material.io/components/icon-buttons/specs
 class IconButton(context: Context, colors: Colors, icon: Int, label: Int) : ImageButton(context, null, 0) {
-    private val shape = RoundDrawable()
+    private val shape = RoundDrawable(smooth = true)
     private val rest = dp(20f)
     private val squeezed = dp(8f)
     private val morph = Motion.effectsDefault.animator(0.5f, rest) {
@@ -136,7 +150,7 @@ class TopBar(context: Context, private val colors: Colors, title: Int, navigatio
         orientation = HORIZONTAL
         gravity = Gravity.CENTER_VERTICAL
         background = fill
-        if (navigation != null) addView(navigation, linear(WRAP_CONTENT, WRAP_CONTENT, start = dp(4), end = dp(4)))
+        if (navigation != null) addView(navigation, linear(WRAP_CONTENT, WRAP_CONTENT, start = dp(4)))
         val heading = text(context, Type.titleLarge.emphasized(), colors.onSurface, title).apply {
             isAccessibilityHeading = true
             maxLines = 1
@@ -217,19 +231,19 @@ class ListGroup(context: Context, private val colors: Colors) : LinearLayout(con
             orientation = HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             minimumHeight = dp(56)
-            setPadding(dp(16), dp(12), dp(16), dp(12))
+            setPadding(dp(16), dp(10), dp(16), dp(10))
             background = ripple(colors.onSurface, shape)
             tag = shape
             accessibilityDelegate = ClickLabel(Button::class.java.name, action)
             setOnClickListener { onClick() }
         }
-        row.addView(text(context, Type.titleMedium, colors.onSurface, title), linear(0, WRAP_CONTENT, weight = 1f, end = dp(16)))
+        row.addView(text(context, Type.bodyLarge, colors.onSurface, title), linear(0, WRAP_CONTENT, weight = 1f, end = dp(16)))
         if (value != null) {
-            val trailing: TextView = text(context, Type.bodyMedium, colors.onSurfaceVariant)
+            val trailing: TextView = text(context, Type.labelSmall, colors.onSurfaceVariant)
             trailing.text = value
             row.addView(trailing, linear(WRAP_CONTENT, WRAP_CONTENT))
         } else {
-            row.addView(Icon(context, vadiole.bugged.R.drawable.ic_chevron_right, colors.onSurfaceVariant), linear(dp(24), dp(24)))
+            row.addView(Icon(context, vadiole.bugged.R.drawable.ic_open_in_new, colors.onSurfaceVariant), linear(dp(24), dp(24)))
         }
         addView(row, linear(top = if (childCount == 0) 0 else dp(2)))
         for (index in 0 until childCount) {
@@ -241,7 +255,7 @@ class ListGroup(context: Context, private val colors: Colors) : LinearLayout(con
     }
 
     private companion object {
-        const val OUTER = 24f
+        const val OUTER = 16f
         const val INNER = 4f
     }
 }

@@ -6,11 +6,14 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
-import kotlin.math.sqrt
 import kotlin.math.tan
 
-internal fun Path.addSquircle(rect: RectF, radius: Float, smoothing: Float = 0.6f) {
-    addSquircle(rect.left, rect.top, rect.right, rect.bottom, radius, radius, radius, radius, smoothing)
+internal fun Path.addSquircle(rect: RectF, radius: Float) {
+    addSquircle(rect, radius, radius)
+}
+
+internal fun Path.addSquircle(rect: RectF, top: Float, bottom: Float, smoothing: Float = 0.6f) {
+    addSquircle(rect.left, rect.top, rect.right, rect.bottom, top, top, bottom, bottom, smoothing)
 }
 
 private fun Path.addSquircle(
@@ -37,48 +40,56 @@ private fun Path.addSquircle(
     val r1 = tr * scale
     val r2 = br * scale
     val r3 = bl * scale
-    corner(0, left, top, r0, min(share(height, r0, r3), share(width, r0, r1)), smoothing)
-    corner(1, right, top, r1, min(share(width, r1, r0), share(height, r1, r2)), smoothing)
-    corner(2, right, bottom, r2, min(share(height, r2, r1), share(width, r2, r3)), smoothing)
-    corner(3, left, bottom, r3, min(share(width, r3, r2), share(height, r3, r0)), smoothing)
+    corner(0, left, top, r0, share(height, r0, r3), share(width, r0, r1), smoothing)
+    corner(1, right, top, r1, share(width, r1, r0), share(height, r1, r2), smoothing)
+    corner(2, right, bottom, r2, share(height, r2, r1), share(width, r2, r3), smoothing)
+    corner(3, left, bottom, r3, share(width, r3, r2), share(height, r3, r0), smoothing)
     close()
 }
 
 private val IN_X = floatArrayOf(0f, 1f, 0f, -1f)
 private val IN_Y = floatArrayOf(-1f, 0f, 1f, 0f)
 
-private fun Path.corner(index: Int, cornerX: Float, cornerY: Float, radius: Float, budget: Float, smoothing: Float) {
+private fun Path.corner(index: Int, cornerX: Float, cornerY: Float, radius: Float, startBudget: Float, endBudget: Float, smoothing: Float) {
     val ix = IN_X[index]
     val iy = IN_Y[index]
-    val r = min(radius, budget)
+    val r = minOf(radius, startBudget, endBudget)
     if (r <= 0f) {
         if (index == 0) moveTo(cornerX, cornerY) else lineTo(cornerX, cornerY)
         return
     }
-    val s = min(smoothing, budget / r - 1f)
-    val p = (1f + s) * r
-    val angle = (PI / 4).toFloat() * s
-    val arc = sqrt(2f) * r * sin((PI / 4).toFloat() - angle)
-    val tangent = r * tan(angle / 2f)
-    val c = tangent * cos(angle)
-    val d = tangent * sin(angle)
-    val b = (p - arc - c - d) / 3f
-    val a = 2f * b
-    val startX = cornerX - p * ix
-    val startY = cornerY - p * iy
-    val endX = cornerX - p * iy
-    val endY = cornerY + p * ix
+    val startSmoothing = min(smoothing, startBudget / r - 1f)
+    val endSmoothing = min(smoothing, endBudget / r - 1f)
+    val startReach = (1f + startSmoothing) * r
+    val endReach = (1f + endSmoothing) * r
+    val startAngle = (PI / 4).toFloat() * startSmoothing
+    val endAngle = (PI / 4).toFloat() * endSmoothing
+    val startX = cornerX - startReach * ix
+    val startY = cornerY - startReach * iy
+    val endX = cornerX - endReach * iy
+    val endY = cornerY + endReach * ix
     if (index == 0) moveTo(startX, startY) else lineTo(startX, startY)
-    if (s > 0f) {
+    if (startSmoothing > 0f) {
+        val tangent = r * tan(startAngle / 2f)
+        val c = tangent * cos(startAngle)
+        val d = tangent * sin(startAngle)
+        val b = (startReach - c - r + r * sin(startAngle)) / 3f
+        val a = 2f * b
         cubicTo(startX + a * ix, startY + a * iy, startX + (a + b) * ix, startY + (a + b) * iy, startX + (a + b + c) * ix - d * iy, startY + (a + b + c) * iy + d * ix)
     }
-    if (s < 1f) {
+    val degrees = 180f / PI.toFloat()
+    val sweep = 90f - (startAngle + endAngle) * degrees
+    if (sweep > 0f) {
         val centerX = cornerX - r * ix - r * iy
         val centerY = cornerY - r * iy + r * ix
-        val start = 180f + 90f * index + angle * (180f / PI.toFloat())
-        arcTo(centerX - r, centerY - r, centerX + r, centerY + r, start, 90f - 2f * angle * (180f / PI.toFloat()), false)
+        arcTo(centerX - r, centerY - r, centerX + r, centerY + r, 180f + 90f * index + startAngle * degrees, sweep, false)
     }
-    if (s > 0f) {
+    if (endSmoothing > 0f) {
+        val tangent = r * tan(endAngle / 2f)
+        val c = tangent * cos(endAngle)
+        val d = tangent * sin(endAngle)
+        val b = (endReach - c - r + r * sin(endAngle)) / 3f
+        val a = 2f * b
         cubicTo(endX + (a + b) * iy, endY - (a + b) * ix, endX + a * iy, endY - a * ix, endX, endY)
     }
 }

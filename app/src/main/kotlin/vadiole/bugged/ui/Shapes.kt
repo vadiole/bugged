@@ -12,12 +12,13 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.RippleDrawable
+import android.os.Build
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
 
-class RoundDrawable(color: Int = Color.WHITE, radius: Float = 0f) : Drawable() {
+class RoundDrawable(color: Int = Color.WHITE, radius: Float = 0f, private val smooth: Boolean = false) : Drawable() {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply { this.color = color }
     private val rect = RectF()
     private val path = Path()
@@ -65,7 +66,17 @@ class RoundDrawable(color: Int = Color.WHITE, radius: Float = 0f) : Drawable() {
         )
     }
 
+    private fun squircle(): Path {
+        path.rewind()
+        path.addSquircle(rect, top, bottom)
+        return path
+    }
+
     override fun draw(canvas: Canvas) {
+        if (smooth) {
+            canvas.drawPath(squircle(), paint)
+            return
+        }
         val limit = min(rect.width(), rect.height()) / 2f
         val t = min(top, limit)
         val b = min(bottom, limit)
@@ -81,6 +92,10 @@ class RoundDrawable(color: Int = Color.WHITE, radius: Float = 0f) : Drawable() {
     }
 
     override fun getOutline(outline: Outline) {
+        if (smooth && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            outline.setPath(squircle())
+            return
+        }
         val limit = min(rect.width(), rect.height()) / 2f
         outline.setRoundRect(rect.left.toInt(), rect.top.toInt(), rect.right.toInt(), rect.bottom.toInt(), min(min(top, bottom), limit))
     }

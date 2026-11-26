@@ -107,9 +107,11 @@ class FeatureCard(
         change,
         Color.argb(140, Color.red(colors.surface), Color.green(colors.surface), Color.blue(colors.surface)),
     )
+    private val browser = Reveal(context, browserRow, dp(14))
     private var active: Boolean? = null
     private var hasBrowser = false
-    private val fade = Motion.effectsSlow.animator(0.01f) { shape.color = mixColor(colors.surfaceContainer, colors.primaryContainer, it) }
+    private var missing = false
+    private val fade = Motion.effectsSlow.animator(0.01f) { paint(it) }
 
     init {
         orientation = VERTICAL
@@ -139,12 +141,11 @@ class FeatureCard(
         addView(head, linear())
         addView(detail, linear(top = dp(10)))
 
-        browserRow.visibility = View.GONE
-        addView(browserRow, linear(top = dp(14)))
+        addView(browser, linear())
 
         val buttons = FrameLayout(context).apply {
-            addView(on, WRAP_CONTENT, WRAP_CONTENT)
-            addView(off, WRAP_CONTENT, WRAP_CONTENT)
+            addView(on, FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT, Gravity.END))
+            addView(off, FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT, Gravity.END))
         }
         addView(Split(context, state, buttons, dp(8)), linear(top = dp(12)))
     }
@@ -153,36 +154,48 @@ class FeatureCard(
         if (active == value) return
         val animate = active != null && isLaidOut && isShown
         active = value
-        val content = if (value) colors.onPrimaryContainer else colors.onSurface
-        val muted = if (value) colors.onPrimaryContainer else colors.onSurfaceVariant
-        if (animate) fade.animateTo(if (value) 1f else 0f) else {
-            fade.snapTo(if (value) 1f else 0f)
-            shape.color = if (value) colors.primaryContainer else colors.surfaceContainer
-        }
-        if (value) badge.tint(colors.primary, colors.onPrimary) else badge.tint(colors.surfaceContainerHighest, colors.onSurfaceVariant)
-        heading.setTextColor(content)
-        detail.setTextColor(muted)
-        detail.alpha = if (value) 0.8f else 1f
         state.setText(if (value) R.string.on else R.string.off)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) heading.stateDescription = state.text
-        state.setTextColor(muted)
         state.setCompoundDrawablesRelative(if (value) check else null, null, null, null)
-        on.visibility = if (value) View.GONE else View.VISIBLE
-        off.visibility = if (value) View.VISIBLE else View.GONE
-        browserRow.visibility = if (value && hasBrowser) View.VISIBLE else View.GONE
+        browser.show(rowShown(), animate)
+        if (animate) fade.animateTo(if (value) 1f else 0f) else {
+            fade.snapTo(if (value) 1f else 0f)
+            paint(if (value) 1f else 0f)
+        }
+    }
+
+    private fun paint(mix: Float) {
+        val muted = mixColor(colors.onSurfaceVariant, colors.onPrimaryContainer, mix)
+        shape.color = mixColor(colors.surfaceContainer, colors.primaryContainer, mix)
+        badge.tint(mixColor(colors.surfaceContainerHighest, colors.primary, mix), mixColor(colors.onSurfaceVariant, colors.onPrimary, mix))
+        heading.setTextColor(mixColor(colors.onSurface, colors.onPrimaryContainer, mix))
+        detail.setTextColor(muted)
+        detail.alpha = lerp(1f, 0.8f, mix)
+        state.setTextColor(muted)
+        browserLabel.setTextColor(muted)
+        on.alpha = 1f - mix
+        off.alpha = mix
+        on.isClickable = mix < 0.5f
+        off.isClickable = mix >= 0.5f
+        on.visibility = if (mix < 1f) View.VISIBLE else View.GONE
+        off.visibility = if (mix > 0f) View.VISIBLE else View.GONE
     }
 
     override fun onDetachedFromWindow() {
         super.onDetachedFromWindow()
         val settled = if (active == true) 1f else 0f
         fade.snapTo(settled)
-        shape.color = mixColor(colors.surfaceContainer, colors.primaryContainer, settled)
+        paint(settled)
     }
 
     fun browser(label: CharSequence?, choice: Boolean) {
         hasBrowser = label != null
-        browserLabel.text = label
+        missing = label == null
+        if (missing) browserLabel.setText(R.string.browser_none) else browserLabel.text = label
         change.visibility = if (choice) View.VISIBLE else View.GONE
-        browserRow.visibility = if (active == true && hasBrowser) View.VISIBLE else View.GONE
+        on.isEnabled = !missing
+        browser.show(rowShown(), isLaidOut && isShown)
     }
+
+    private fun rowShown() = missing || active == true && hasBrowser
 }

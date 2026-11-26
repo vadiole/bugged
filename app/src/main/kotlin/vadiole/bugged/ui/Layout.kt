@@ -129,3 +129,47 @@ class Split(context: Context, private val lead: View, private val trail: View, p
 
     private fun place(view: View, x: Int, y: Int) = view.layout(x, y, x + view.measuredWidth, y + view.measuredHeight)
 }
+
+class Reveal(context: Context, private val child: View, private val gap: Int) : android.view.ViewGroup(context) {
+    private var shown = false
+    private var fraction = 0f
+    private val spring = Motion.spatialDefault.animator(0.002f) { place(it) }
+
+    init {
+        addView(child)
+        child.visibility = INVISIBLE
+    }
+
+    fun show(value: Boolean, animate: Boolean) {
+        if (shown == value) return
+        shown = value
+        val target = if (value) 1f else 0f
+        if (animate) spring.animateTo(target) else {
+            spring.snapTo(target)
+            place(target)
+        }
+    }
+
+    private fun place(value: Float) {
+        fraction = value.coerceAtLeast(0f)
+        child.alpha = fraction.coerceAtMost(1f)
+        child.visibility = if (fraction > 0f) VISIBLE else INVISIBLE
+        requestLayout()
+    }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        child.measure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED))
+        setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), ((gap + child.measuredHeight) * fraction).toInt())
+    }
+
+    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+        child.layout(0, gap, child.measuredWidth, gap + child.measuredHeight)
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        val settled = if (shown) 1f else 0f
+        spring.snapTo(settled)
+        place(settled)
+    }
+}

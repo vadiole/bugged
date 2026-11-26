@@ -97,6 +97,7 @@ class Nav(private val container: FrameLayout, private val provide: (Route) -> De
         stack.clear()
         routes.forEachIndexed { index, route ->
             val destination = create(route)
+            if (destination is Sheet) destination.dim = stack.lastOrNull() !is Sheet
             stack.add(destination)
             container.addView(destination, matchParent())
             @Suppress("DEPRECATION")
@@ -118,6 +119,7 @@ class Nav(private val container: FrameLayout, private val provide: (Route) -> De
         val screen = create(route)
         if (screen is Sheet) {
             transition?.end()
+            screen.dim = stack.lastOrNull() !is Sheet
             stack.add(screen)
             container.addView(screen, matchParent())
             screen.open()
@@ -146,6 +148,7 @@ class Nav(private val container: FrameLayout, private val provide: (Route) -> De
         previous?.alpha = 1f
 
         screen.isEntering = true
+        screen.setLayerType(View.LAYER_TYPE_HARDWARE, null)
         runTransition(
             interpolator = linear,
             onUpdate = { time ->
@@ -158,6 +161,7 @@ class Nav(private val container: FrameLayout, private val provide: (Route) -> De
                 screen.translationX = 0f
                 screen.alpha = 1f
                 screen.isEntering = false
+                screen.setLayerType(View.LAYER_TYPE_NONE, null)
                 previous?.let {
                     it.translationX = 0f
                     if (it !in stack) container.removeView(it) else it.visibility = View.INVISIBLE
@@ -263,6 +267,7 @@ class Nav(private val container: FrameLayout, private val provide: (Route) -> De
         top.translationX = 0f
         top.alpha = 1f
         top.isLeaving = true
+        top.setLayerType(View.LAYER_TYPE_HARDWARE, null)
         leaving = top
         previous.translationX = -offset
         previous.alpha = 1f

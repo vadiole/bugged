@@ -71,14 +71,19 @@ class AboutScreen(context: Context, private val host: Host) : Screen(context, ho
         val view = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         val handler = context.packageManager.resolveActivity(view, PackageManager.MATCH_DEFAULT_ONLY)?.activityInfo?.packageName
         if (handler == context.packageName && host.browsers.target() == null) {
-            copy(url)
+            missing(url)
             return
         }
         try {
             context.startActivity(view)
         } catch (_: ActivityNotFoundException) {
-            copy(url)
+            missing(url)
         }
+    }
+
+    private fun missing(url: String) {
+        copy(url)
+        Toast.makeText(context, R.string.browser_none, Toast.LENGTH_SHORT).show()
     }
 
     private fun write() {

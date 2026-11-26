@@ -28,6 +28,7 @@ object Type {
     val bodyMedium = TextStyle(14f, 20f, 0.25f, 400, false)
     val bodySmall = TextStyle(12f, 16f, 0.4f, 400, false)
     val labelLarge = TextStyle(14f, 20f, 0.1f, 500, false)
+    val labelSmall = TextStyle(11f, 16f, 0.5f, 500, false)
 
     val brand: Typeface by lazy { system("config_headlineFontFamily") }
     val plain: Typeface by lazy { system("config_bodyFontFamily") }

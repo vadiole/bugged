@@ -5,6 +5,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
+import android.graphics.drawable.ColorDrawable
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
@@ -18,34 +19,51 @@ import kotlin.math.min
 class WelcomeScreen(context: Context, host: Host) : Screen(context, host.colors, R.string.welcome_title) {
     init {
         val colors = host.colors
-        val column = Column(context)
-        column.addView(Hero(context, colors), linear(dp(172), dp(172), start = dp(18), top = dp(12)))
+        val content = Column(context)
+        content.addView(Hero(context, colors), linear(dp(172), dp(172), start = dp(18), top = dp(12)))
         val title = text(context, Type.displaySmall.emphasized(), colors.onSurface, R.string.welcome_title)
         title.isAccessibilityHeading = true
-        column.addView(title, linear(start = dp(24), end = dp(24), top = dp(24)))
-        column.addView(
+        content.addView(title, linear(start = dp(24), end = dp(24), top = dp(24)))
+        content.addView(
             text(context, Type.bodyLarge, colors.onSurfaceVariant, R.string.welcome_body),
             linear(start = dp(24), end = dp(24), top = dp(12)),
         )
-        column.addView(LinkDemo(context, colors), linear(start = dp(24), end = dp(24), top = dp(24)))
-        column.addView(fact(colors, R.drawable.ic_wifi_off, R.string.welcome_offline), linear(start = dp(24), end = dp(24), top = dp(20)))
-        column.addView(
+        content.addView(LinkDemo(context, colors), linear(start = dp(24), end = dp(24), top = dp(24)))
+        content.addView(fact(colors, R.drawable.ic_wifi_off, R.string.welcome_offline), linear(start = dp(24), end = dp(24), top = dp(20)))
+        content.addView(
             fact(colors, R.drawable.ic_toggle_on, R.string.welcome_access),
             linear(start = dp(24), end = dp(24), top = dp(14), bottom = dp(16)),
         )
-        val scroll = Scroller(context, column)
+        val scroll = Scroller(context, content)
         val action = ActionButton(context, colors, ActionButton.Kind.Filled, true, R.string.welcome_action)
         action.setOnClickListener { host.start() }
-        val footer = Column(context)
-        footer.addView(action, linear(start = dp(24), end = dp(24), top = dp(8), bottom = dp(16)))
+        val column = Column(context)
+        column.addView(action, linear(start = dp(24), end = dp(24), top = dp(8), bottom = dp(16)))
+        val fill = ColorDrawable(colors.surface)
+        val lift = Motion.effectsDefault.animator(0.01f) { fill.color = mixColor(colors.surface, colors.surfaceContainer, it) }
+        val footer = FrameLayout(context).apply {
+            background = fill
+            addView(column, LayoutParams(MATCH_PARENT, WRAP_CONTENT, Gravity.CENTER_HORIZONTAL))
+        }
         val root = LinearLayout(context).apply { orientation = LinearLayout.VERTICAL }
         root.addView(scroll, linear(height = 0, weight = 1f))
-        root.addView(footer, linear(gravity = Gravity.CENTER_HORIZONTAL))
+        root.addView(footer, linear())
         addView(root, MATCH_PARENT, MATCH_PARENT)
+        var lifted = false
+        scroll.setOnScrollChangeListener { _, _, _, _, _ ->
+            lifted = scroll.canScrollVertically(1)
+            lift.animateTo(if (lifted) 1f else 0f)
+        }
+        scroll.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+            if (lifted == scroll.canScrollVertically(1)) return@addOnLayoutChangeListener
+            lifted = !lifted
+            lift.snapTo(if (lifted) 1f else 0f)
+            fill.color = if (lifted) colors.surfaceContainer else colors.surface
+        }
         onBars { bars ->
             scroll.setPadding(bars.left, 0, bars.right, 0)
-            root.setPadding(0, bars.top, 0, bars.bottom)
-            footer.setPadding(bars.left, 0, bars.right, 0)
+            root.setPadding(0, bars.top, 0, 0)
+            footer.setPadding(bars.left, 0, bars.right, bars.bottom)
         }
     }
 
@@ -57,24 +75,16 @@ class WelcomeScreen(context: Context, host: Host) : Screen(context, host.colors,
 }
 
 private class Hero(context: Context, colors: Colors) : FrameLayout(context) {
-    private val cookie = CookieDrawable(colors.primaryContainer)
-    private val spin = Loop(40_000L) {
-        cookie.rotation = it * 360f
-        invalidate()
+    private val cookie = View(context).apply {
+        background = CookieDrawable(colors.primaryContainer)
+        setLayerType(LAYER_TYPE_HARDWARE, null)
     }
+    private val spin = Loop(40_000L) { cookie.rotation = it * 360f }
 
     init {
-        setWillNotDraw(false)
         importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+        addView(cookie, MATCH_PARENT, MATCH_PARENT)
         addView(AppIcon(context), LayoutParams(dp(104), dp(104), Gravity.CENTER))
-    }
-
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        cookie.setBounds(0, 0, w, h)
-    }
-
-    override fun onDraw(canvas: Canvas) {
-        cookie.draw(canvas)
     }
 
     override fun onVisibilityAggregated(isVisible: Boolean) {

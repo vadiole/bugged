@@ -5,6 +5,7 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.widget.Toast
 
 class OpenActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -12,6 +13,7 @@ class OpenActivity : Activity() {
         val link = intent.dataString
         val browser = App.instance.browsers.target()
         if (link == null || browser == null || !forward(link, browser)) {
+            if (link != null) Toast.makeText(applicationContext, R.string.browser_none, Toast.LENGTH_SHORT).show()
             startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         }
         finish()
