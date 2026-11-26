@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.InsetDrawable
 import android.graphics.drawable.StateListDrawable
 import android.text.TextUtils
 import android.util.TypedValue
@@ -83,23 +84,19 @@ class OpenSheet(context: Context, private val host: Host) : Sheet(context, host.
         header(colors, content, R.drawable.ic_open_in_new, R.string.open_sheet_title, R.string.open_sheet_what, R.string.open_sheet_never)
         change.setOnClickListener { host.go(Route.Browser) }
         change.contentDescription = context.getString(R.string.change_browser)
-        val row = Split(context, label, change, dp(8)).apply {
-            minimumHeight = dp(52)
-            background = RoundDrawable(colors.surfaceContainerHigh, dp(20f))
-            setPaddingRelative(dp(16), dp(2), dp(6), dp(2))
-        }
-        content.addView(row, linear(top = dp(20)))
+        content.addView(browserRow(label, change, colors.surfaceContainerHigh), linear(top = dp(20)))
         actions(colors, content, R.string.open_sheet_action) { host.requestBrowser() }
     }
 
     override fun refresh() {
-        val selected = host.browsers.selected()
+        val all = host.browsers.all()
+        val selected = host.browsers.selected(all)
         label.text = if (selected == null) {
             context.getString(R.string.browser_none)
         } else {
             context.withBold(R.string.open_sheet_browser, selected.label)
         }
-        change.visibility = if (host.browsers.all().size > 1) View.VISIBLE else View.GONE
+        change.visibility = if (all.size > 1) View.VISIBLE else View.GONE
     }
 }
 
@@ -109,7 +106,10 @@ class BrowserSheet(context: Context, host: Host) : Sheet(context, host.colors, R
         heading.isAccessibilityHeading = true
         content.setPadding(0, 0, 0, dp(16))
         content.addView(heading, linear(start = dp(24), end = dp(24), bottom = dp(8)))
-        val selected = host.browsers.selected()?.packageName
+        val all = host.browsers.all()
+        val selected = host.browsers.selected(all)?.packageName
+        val rtl = resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
+        val side = dp(24)
         val marks = StateListDrawable().apply {
             addState(intArrayOf(android.R.attr.state_checked), context.getDrawable(R.drawable.ic_radio_button_checked))
             addState(intArrayOf(), context.getDrawable(R.drawable.ic_radio_button_unchecked))
@@ -118,14 +118,14 @@ class BrowserSheet(context: Context, host: Host) : Sheet(context, host.colors, R
             arrayOf(intArrayOf(android.R.attr.state_checked), intArrayOf()),
             intArrayOf(colors.primary, colors.onSurfaceVariant),
         )
-        for (browser in host.browsers.all()) {
+        for (browser in all) {
             val option = RadioButton(context, null, 0).apply {
                 style(Type.bodyLarge)
                 setTextColor(colors.onSurface)
                 text = browser.label
                 maxLines = 1
                 ellipsize = TextUtils.TruncateAt.END
-                buttonDrawable = marks.constantState!!.newDrawable().mutate()
+                buttonDrawable = InsetDrawable(marks.constantState!!.newDrawable().mutate(), if (rtl) 0 else side, 0, if (rtl) side else 0, 0)
                 buttonTintList = tints
                 gravity = Gravity.CENTER_VERTICAL
                 minHeight = dp(56)
@@ -138,7 +138,7 @@ class BrowserSheet(context: Context, host: Host) : Sheet(context, host.colors, R
                     dismiss()
                 }
             }
-            content.addView(option, linear(start = dp(24)))
+            content.addView(option, linear())
         }
     }
 }

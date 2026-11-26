@@ -68,6 +68,12 @@ class AppIcon(context: Context) : View(context) {
     }
 }
 
+fun browserRow(label: View, change: View, fill: Int) = Split(label.context, label, change, label.dp(8)).apply {
+    minimumHeight = dp(52)
+    background = RoundDrawable(fill, dp(20f))
+    setPaddingRelative(dp(16), dp(2), dp(6), dp(2))
+}
+
 class Split(context: Context, private val lead: View, private val trail: View, private val gap: Int) : android.view.ViewGroup(context) {
     private var stacked = false
 

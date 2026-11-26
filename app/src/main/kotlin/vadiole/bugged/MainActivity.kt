@@ -83,9 +83,11 @@ class MainActivity : Activity(), Host {
         super.onStart()
         val setting = Settings.Secure.getUriFor(Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
         contentResolver.registerContentObserver(setting, false, settingsObserver)
+        setup.onCount = { runOnUiThread { nav.refresh() } }
     }
 
     override fun onStop() {
+        setup.onCount = null
         contentResolver.unregisterContentObserver(settingsObserver)
         super.onStop()
     }
@@ -97,7 +99,7 @@ class MainActivity : Activity(), Host {
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (hasFocus && App.instance.cleanClipboard()) nav.refresh()
+        if (hasFocus && setup.copyOn()) App.instance.cleanClipboard()
     }
 
     private fun sync() {

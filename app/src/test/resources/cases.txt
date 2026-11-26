@@ -138,3 +138,7 @@ https://www.google.com/amp/s/ https://www.google.com/amp/s/
 https://href.li/?ref=1 https://href.li/?ref=1
 https://click.pstmrk.it/3s/notahost/abcd https://click.pstmrk.it/3s/notahost/abcd
 https://www.deviantart.com/users/outgoing?q=art https://www.deviantart.com/users/outgoing?q=art
+https://click.pstmrk.it/2/example.com%2Fdocs%2Fstart/abcd/efgh http://example.com/docs/start
+https://click.redditmail.com/CL0/unsubscribe/1/0100018abc https://click.redditmail.com/CL0/unsubscribe/1/0100018abc
+https://abc123.r.us-east-1.awstrack.me/L0/not-a-link/1/0100018a https://abc123.r.us-east-1.awstrack.me/L0/not-a-link/1/0100018a
+https://outgoing.prod.mozaws.net/v1/0123456789abcdef/about https://outgoing.prod.mozaws.net/v1/0123456789abcdef/about

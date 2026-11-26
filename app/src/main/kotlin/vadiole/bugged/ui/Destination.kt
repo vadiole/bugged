@@ -22,8 +22,9 @@ abstract class Destination(context: Context) : FrameLayout(context) {
     open fun refresh() = Unit
 }
 
-abstract class Screen(context: Context, colors: Colors) : Destination(context) {
+abstract class Screen(context: Context, colors: Colors, title: Int) : Destination(context) {
     init {
+        accessibilityPaneTitle = context.getString(title)
         setBackgroundColor(colors.surface)
         isClickable = true
     }

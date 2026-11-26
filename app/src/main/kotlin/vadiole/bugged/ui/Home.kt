@@ -9,11 +9,10 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
 import android.widget.LinearLayout
-import android.widget.TextView
 import vadiole.bugged.R
 import java.text.NumberFormat
 
-class HomeScreen(context: Context, private val host: Host) : Screen(context, host.colors) {
+class HomeScreen(context: Context, private val host: Host) : Screen(context, host.colors, R.string.app_name) {
     private val colors = host.colors
     private val headline = text(context, Type.displaySmall.emphasized(), colors.onSurface).apply { isAccessibilityHeading = true }
     private val status = text(context, Type.bodyLarge, colors.onSurfaceVariant)
@@ -103,7 +102,11 @@ class FeatureCard(
     private val off = ActionButton(context, colors, ActionButton.Kind.Text, false, R.string.turn_off)
     private val browserLabel = text(context, Type.bodyMedium, colors.onPrimaryContainer)
     private val change = ActionButton(context, colors, ActionButton.Kind.Tonal, false, R.string.change)
-    private val browserRow = Split(context, browserLabel, change, dp(8))
+    private val browserRow = browserRow(
+        browserLabel,
+        change,
+        Color.argb(140, Color.red(colors.surface), Color.green(colors.surface), Color.blue(colors.surface)),
+    )
     private var active: Boolean? = null
     private var hasBrowser = false
     private val fade = Motion.effectsSlow.animator(0.01f) { shape.color = mixColor(colors.surfaceContainer, colors.primaryContainer, it) }
@@ -136,9 +139,6 @@ class FeatureCard(
         addView(head, linear())
         addView(detail, linear(top = dp(10)))
 
-        browserRow.minimumHeight = dp(52)
-        browserRow.background = RoundDrawable(Color.argb(140, Color.red(colors.surface), Color.green(colors.surface), Color.blue(colors.surface)), dp(20f))
-        browserRow.setPaddingRelative(dp(16), dp(2), dp(6), dp(2))
         browserRow.visibility = View.GONE
         addView(browserRow, linear(top = dp(14)))
 
@@ -181,7 +181,7 @@ class FeatureCard(
 
     fun browser(label: CharSequence?, choice: Boolean) {
         hasBrowser = label != null
-        (browserLabel as TextView).text = label
+        browserLabel.text = label
         change.visibility = if (choice) View.VISIBLE else View.GONE
         browserRow.visibility = if (active == true && hasBrowser) View.VISIBLE else View.GONE
     }

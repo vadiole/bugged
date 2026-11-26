@@ -15,7 +15,7 @@ import android.widget.LinearLayout
 import vadiole.bugged.R
 import kotlin.math.min
 
-class WelcomeScreen(context: Context, host: Host) : Screen(context, host.colors) {
+class WelcomeScreen(context: Context, host: Host) : Screen(context, host.colors, R.string.welcome_title) {
     init {
         val colors = host.colors
         val column = Column(context)
@@ -43,8 +43,8 @@ class WelcomeScreen(context: Context, host: Host) : Screen(context, host.colors)
         root.addView(footer, linear(gravity = Gravity.CENTER_HORIZONTAL))
         addView(root, MATCH_PARENT, MATCH_PARENT)
         onBars { bars ->
-            scroll.setPadding(bars.left, bars.top, bars.right, 0)
-            root.setPadding(0, 0, 0, bars.bottom)
+            scroll.setPadding(bars.left, 0, bars.right, 0)
+            root.setPadding(0, bars.top, 0, bars.bottom)
             footer.setPadding(bars.left, 0, bars.right, 0)
         }
     }
@@ -93,13 +93,16 @@ private class LinkDemo(context: Context, private val colors: Colors) : View(cont
     private val rect = RectF()
     private var shown = 1f
     private val cut = Loop(5_000L) { time ->
-        shown = when {
+        val next = when {
             time < 0.35f -> 1f
             time < 0.5f -> 1f - Motion.emphasized.getInterpolation((time - 0.35f) / 0.15f)
             time < 0.9f -> 0f
             else -> Motion.emphasized.getInterpolation((time - 0.9f) / 0.1f)
         }
-        invalidate()
+        if (next != shown) {
+            shown = next
+            invalidate()
+        }
     }
 
     init {

@@ -149,10 +149,11 @@ class Nav(private val container: FrameLayout, private val provide: (Route) -> De
         entering = screen
         screen.isEntering = true
         runTransition(
-            onUpdate = { f ->
-                val t = (f * DURATION).toLong()
+            interpolator = linear,
+            onUpdate = { time ->
+                val f = emphasized.getInterpolation(time)
                 screen.translationX = offset * (1f - f)
-                screen.alpha = fadeGate(t)
+                screen.alpha = fadeGate((time * DURATION).toLong())
                 previous?.translationX = -offset * f
             },
             onEnd = {
@@ -384,7 +385,7 @@ class Nav(private val container: FrameLayout, private val provide: (Route) -> De
         val fromTopTx = top.translationX
         val fromTy = top.translationY
         val fromTx = previous.translationX
-        val offset = offset()
+        val offset = if (backFromLeft) abs(offset()) else offset()
 
         runTransition(
             interpolator = linear,
@@ -504,11 +505,6 @@ class Nav(private val container: FrameLayout, private val provide: (Route) -> De
     private fun changed() {
         val top = stack.lastOrNull()
         val focused = container.findFocus()
-        if (focused != null && top != null) {
-            var parent: View? = focused
-            while (parent != null && parent !== top) parent = parent.parent as? View
-            if (parent == null) focused.clearFocus()
-        }
         for (index in 0 until container.childCount) {
             val destination = container.getChildAt(index) as? Destination ?: continue
             val active = destination === top
@@ -522,6 +518,11 @@ class Nav(private val container: FrameLayout, private val provide: (Route) -> De
             } else {
                 ViewGroup.FOCUS_BLOCK_DESCENDANTS
             }
+        }
+        if (focused != null && top != null) {
+            var parent: View? = focused
+            while (parent != null && parent !== top) parent = parent.parent as? View
+            if (parent == null) focused.clearFocus()
         }
         onChange()
     }

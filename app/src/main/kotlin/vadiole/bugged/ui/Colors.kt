@@ -2,7 +2,6 @@ package vadiole.bugged.ui
 
 import android.content.Context
 import android.content.res.Configuration
-import android.graphics.Color
 import android.os.Build
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
@@ -69,11 +68,7 @@ class Colors(
         @TargetApi(Build.VERSION_CODES.S)
         private fun tones(context: Context, dark: Boolean): Colors {
             fun c(id: Int) = context.getColor(id)
-            fun mix(from: Int, to: Int, fraction: Float) = Color.rgb(
-                lerp(Color.red(from).toFloat(), Color.red(to).toFloat(), fraction).toInt(),
-                lerp(Color.green(from).toFloat(), Color.green(to).toFloat(), fraction).toInt(),
-                lerp(Color.blue(from).toFloat(), Color.blue(to).toFloat(), fraction).toInt(),
-            )
+            fun mix(from: Int, to: Int, fraction: Float) = mixColor(from, to, fraction)
             val n0 = c(android.R.color.system_neutral1_1000)
             val n10 = c(android.R.color.system_neutral1_900)
             val n20 = c(android.R.color.system_neutral1_800)

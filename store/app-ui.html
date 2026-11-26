@@ -69,7 +69,7 @@ kbd { display: inline-block; min-width: 20px; padding: 1px 6px; border-radius: 5
 .tip .sym { color: var(--onSurfaceVariant); }
 
 .list { display: grid; gap: 2px; margin-bottom: 16px; }
-.item { display: flex; gap: 14px; align-items: center; padding: 16px; background: var(--surfaceContainer); border-radius: 4px; min-height: 72px; cursor: pointer; }
+.item { display: flex; gap: 14px; align-items: center; padding: 16px; background: var(--surfaceContainer); border-radius: 4px; min-height: 56px; cursor: pointer; }
 .item:first-child { border-radius: 24px 24px 4px 4px; }
 .item:last-child { border-radius: 4px 4px 24px 24px; }
 .item:only-child { border-radius: 24px; }
@@ -226,7 +226,7 @@ const browserChoice = () => `<div class="sub" style="background:var(--surfaceCon
 const sheetCopy = () => `<div class="scrim"></div><div class="sheet">
   ${sheetBadge('content_copy')}
   <div class="headline">Clean links you copy</div>
-  <p class="muted">Bugged uses Accessibility to detect links you copy, so it can clean them when a tracker is present.</p>
+  <p class="muted">Bugged uses Accessibility to detect links you copy, so it can clean them when a tracking tag is present.</p>
   <p class="muted">The app only looks at Copy buttons you tap and the text you copy. It never reads anything else on your screen.</p>
   <div class="steps"><div><b>1</b><span>In Settings, tap <b>Bugged</b></span></div><div><b>2</b><span>Turn on <b>Use Bugged</b></span></div></div>
   ${state.restricted ? `<p class="muted" style="font-size:13px">If Settings says “Restricted setting”, open Bugged’s App info, tap the 3 dots, then <b>Allow restricted settings</b>.</p>` : ''}

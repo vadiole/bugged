@@ -17,8 +17,11 @@ class Setup(private val context: Context) {
     val cleaned: Long
         get() = preferences.getLong(KEY_CLEANED, 0L)
 
+    var onCount: (() -> Unit)? = null
+
     fun count() {
         preferences.edit().putLong(KEY_CLEANED, cleaned + 1L).apply()
+        onCount?.invoke()
     }
 
     fun copyOn(): Boolean {

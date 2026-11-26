@@ -14,7 +14,7 @@ import android.widget.Toast
 import vadiole.bugged.BuildConfig
 import vadiole.bugged.R
 
-class AboutScreen(context: Context, host: Host) : Screen(context, host.colors) {
+class AboutScreen(context: Context, host: Host) : Screen(context, host.colors, R.string.about) {
     private val version = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
 
     init {
