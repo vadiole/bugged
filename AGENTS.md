@@ -12,7 +12,7 @@ Main features:
 - Architecture: app-scoped singletons on `App`.
 - Dependencies: none at runtime; junit for tests. The app has no `INTERNET` permission and never gets one: working offline is the product's promise.
 - Cleaning rules are data, not code: `app/src/main/assets/rules.txt` (tracking parameters per host) and `redirects.txt` (redirect wrappers). Both are generated; change them through the `update-rules` skill, never by hand.
-- Clipboard: only the focused app may read the clipboard, so `ClipboardService` reads the copied text from the system clipboard preview's accessibility events and writes the clean link back, which needs no focus. Text the preview cuts off (500 characters) and copies with no preview fall back to a 1px focusable overlay that reads the clipboard. Polling is impossible, and a window on a private virtual display never gets focus.
+- Clipboard: only the focused app may read the clipboard, so `ClipboardService` reads the copied text from the system clipboard preview's accessibility events and writes the clean link back, which needs no focus. Text the preview cuts off (500 characters) and copies with no readable preview fall back to a 1px focusable overlay that reads the clipboard; that read makes Android show its "pasted from your clipboard" toast, so it stays the last resort. Every clipboard write restarts the system preview, so on a tap on "Copy" over a selected link the service writes the clean link from the selection before the preview appears. Polling is impossible, and a window on a private virtual display never gets focus.
 - Tests cover the cleaner only: `Cleaner` is pure Kotlin with no Android imports, and `CleanerTest` checks the `dirty clean` pairs in `app/src/test/resources/cases.txt`.
 - No comments or docs in code. Exception: critical info with a link to an issue or source.
 - User-visible text in `strings.xml`.
@@ -30,6 +30,7 @@ Main features:
 - The debug build logs every accessibility event the service receives and whether it acted on it: `adb logcat -s Bugged`.
 - The debug build can copy text as if another app did: `adb shell "am broadcast -n vadiole.bugged.debug/vadiole.bugged.CopyReceiver --es text '<text>'"`.
 - Each reinstall kills the accessibility service; turn it off and on again before testing the clipboard.
+- `uiautomator dump` suspends accessibility services while it runs; check clipboard results in the `Bugged` log, not with a dump.
 
 ## Git
 

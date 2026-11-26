@@ -14,6 +14,10 @@ class Setup(private val context: Context) {
         get() = preferences.getBoolean(KEY_WELCOMED, false)
         set(value) = preferences.edit().putBoolean(KEY_WELCOMED, value).apply()
 
+    var previews: Boolean
+        get() = preferences.getBoolean(KEY_PREVIEWS, false)
+        set(value) = preferences.edit().putBoolean(KEY_PREVIEWS, value).apply()
+
     val cleaned: Long
         get() = preferences.getLong(KEY_CLEANED, 0L)
 
@@ -46,5 +50,6 @@ class Setup(private val context: Context) {
     private companion object {
         const val KEY_WELCOMED = "welcomed"
         const val KEY_CLEANED = "cleaned"
+        const val KEY_PREVIEWS = "previews"
     }
 }
