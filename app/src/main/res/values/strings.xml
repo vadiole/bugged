@@ -1,21 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Bugged</string>
-    <string name="app_description">Removes trackers from links. Works offline and collects nothing.</string>
+    <string name="app_name" translatable="false">Bugged</string>
+
+    <!-- Accessibility label of the dimmed area behind a bottom sheet. Tapping it closes the sheet. -->
+    <string name="close">Close</string>
+    <!-- Accessibility label of the back arrow in the top bar. -->
+    <string name="back">Back</string>
     <string name="on">On</string>
     <string name="off">Off</string>
-    <string name="clipboard_title">Copied links</string>
-    <string name="clipboard_description">Cleans a link when you copy it. Uses an accessibility service to notice the copy.</string>
-    <string name="clipboard_action">Open accessibility settings</string>
-    <string name="links_title">Opened links</string>
-    <string name="links_description">Cleans a link when you tap it in another app. Bugged becomes the default browser and passes the link on.</string>
-    <string name="links_action">Change default browser</string>
-    <string name="browser_title">Browser</string>
-    <string name="browser_description">Where clean links open.</string>
-    <string name="browser_action">Choose browser</string>
-    <string name="browser_none">None found</string>
-    <string name="clean_link">Clean link</string>
+    <string name="turn_on">Turn on</string>
+    <string name="turn_off">Turn off</string>
+    <string name="not_now">Not now</string>
+    <!-- Button that opens a list of browsers to pick from. -->
+    <string name="change">Change</string>
+
+    <!-- First screen. Headline, also the app's slogan. -->
+    <string name="welcome_title">Clean your links</string>
+    <string name="welcome_body">Many links carry a tag that tells sites who shared them and what you tapped. Bugged protects your privacy by cutting it off. The link opens the same page.</string>
+    <string name="welcome_offline">Works offline. Bugged has no internet access, so nothing leaves your phone.</string>
+    <!-- "Accessibility" is the name of the Android settings section. Use the name Android uses in this language. -->
+    <string name="welcome_access">Bugged needs Accessibility to detect and clean links you copy.</string>
+    <string name="welcome_action">Set up</string>
+
+    <!-- Home headline while both features are off. -->
+    <string name="home_choose">Choose what to clean</string>
+    <string name="home_copy">Cleaning links you copy</string>
+    <string name="home_open">Cleaning links you open</string>
+    <string name="home_both">Cleaning links you copy and open</string>
+    <!-- Home headline. %1$s is the formatted number of links cleaned so far, like 1,280. -->
+    <plurals name="home_cleaned">
+        <item quantity="one">%1$s link cleaned</item>
+        <item quantity="other">%1$s links cleaned</item>
+    </plurals>
+
+    <string name="copy_title">Links you copy</string>
+    <string name="copy_description">Copy a link in any app and paste it clean.</string>
+    <string name="open_title">Links you open</string>
+    <string name="open_description">Tap a link in any app and it opens clean in your browser.</string>
+    <!-- %1$s is a browser name, like Chrome. -->
+    <string name="open_browser">Opens in %1$s</string>
+
+    <string name="copy_sheet_title">Clean links you copy</string>
+    <!-- "Accessibility" is the name of the Android settings section. -->
+    <string name="copy_sheet_what">Bugged uses Accessibility to detect links you copy, so it can clean them when a tracker is present.</string>
+    <string name="copy_sheet_access">The app only looks at Copy buttons you tap and the text you copy. It never reads anything else on your screen.</string>
+    <!-- Step 1. "Settings" is the Android Settings app. %1$s is the app name, Bugged. -->
+    <string name="copy_sheet_step_1">In Settings, tap %1$s</string>
+    <!-- Step 2. %1$s is the label of the switch in Android's Accessibility settings, "Use Bugged". -->
+    <string name="copy_sheet_step_2">Turn on %1$s</string>
+    <!-- Label of the switch in Android's Accessibility settings. Use Android's own wording in this language. %1$s is the app name. -->
+    <string name="copy_sheet_switch">Use %1$s</string>
+    <!-- “Restricted setting” is the title of an Android dialog, "App info" is an Android settings screen. %1$s is the menu item "Allow restricted settings". Use Android's own wording in this language. -->
+    <string name="copy_sheet_restricted">If Settings says “Restricted setting”, open Bugged’s App info, tap the 3 dots, then %1$s.</string>
+    <!-- Menu item on Android's App info screen. Use Android's own wording in this language. -->
+    <string name="copy_sheet_allow">Allow restricted settings</string>
+    <string name="copy_sheet_action">Open Settings</string>
+
+    <string name="open_sheet_title">Clean links you open</string>
+    <string name="open_sheet_what">Make Bugged your default browser app and pick the browser that opens the clean links. Bugged cleans each link you tap and passes it on.</string>
+    <string name="open_sheet_never">Bugged never loads the page itself.</string>
+    <!-- %1$s is a browser name, like Chrome. -->
+    <string name="open_sheet_browser">Clean links open in %1$s</string>
+    <string name="open_sheet_action">Set as default</string>
+    <string name="browser_none">No browser found</string>
+    <!-- Title of the list of installed browsers. -->
+    <string name="browser_title">Choose a browser</string>
+
+    <string name="about">About</string>
+    <string name="about_version">App version</string>
+    <string name="about_rate">Rate on Google Play</string>
+    <string name="about_feedback">Feedback &amp; ideas</string>
+    <string name="about_feedback_note">Report a bug or suggest a feature. I read every email.</string>
+    <string name="about_feedback_subject">Bugged feedback</string>
+    <string name="about_author">Designed and developed by @vadiole</string>
+    <!-- Accessibility action on the version row. -->
+    <string name="about_copy">Copy app and device info</string>
+    <!-- Short message after the app and device info was copied. -->
+    <string name="about_copied">Copied</string>
+    <string name="privacy_policy">Privacy policy</string>
+
+    <!-- Shown by Android in Accessibility settings, under the app name. -->
     <string name="service_summary">Removes trackers from copied links</string>
     <string name="service_description">Notices when you copy a link and removes its trackers. To notice a copy, it looks for Copy buttons you tap and the clipboard preview. Bugged keeps nothing it sees and has no internet access.</string>
+    <!-- Label Android may show for the cleaned clipboard content. -->
     <string name="clip_label">Clean link</string>
 </resources>

@@ -3,11 +3,13 @@ Bugged: an open source Android app that removes trackers from links. It works of
 Main features:
 - Cleans a link in the clipboard right after it is copied, through an accessibility service.
 - Cleans a link opened from another app: Bugged is the default browser and forwards the clean link to the browser picked in the app.
-- "Clean link" in the text selection menu.
+- Counts cleaned links on the device and shows the number on Home.
 
 ## Project
 
-- UI: Views in Kotlin, single screen in `MainActivity`; no XML layouts, no AppCompat, no Compose.
+- UI: Views in Kotlin, single activity, no fragments; no XML layouts, no AppCompat, no Compose, no Material library. `ui/` holds our own Material 3 Expressive components: colors from the wallpaper on Android 12+ (`Colors`), the type scale (`Type`), spring tokens (`Motion`), shapes and ripples (`Shapes`), buttons, top bar, list rows (`Components`).
+- Navigation: `Nav` keeps a back stack of `Route`s and builds each `Destination` from it; a `Screen` fills the window, a `Sheet` is a bottom sheet over the screen below. Both support predictive back, and the stack is saved and restored with the activity. Screens talk to the activity through `Host`.
+- The approved design and copy live in the prototype `store/app-ui.html` (`python3 store/serve.py 8731`). Don't change copy or layout without the owner's approval.
 - Modules: single `:app`. minSdk 29, targetSdk 37.
 - Architecture: app-scoped singletons on `App`. `Cleaner` is pure Kotlin with no Android imports, so it runs in unit tests.
 - Dependencies: none at runtime; junit for tests. Never add the `INTERNET` permission.

@@ -67,6 +67,7 @@ android {
             "NewerVersionAvailable",
             "AndroidGradlePluginVersion",
             "OldTargetApi",
+            "ViewConstructor",
         )
     }
 }

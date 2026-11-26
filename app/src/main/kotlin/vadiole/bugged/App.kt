@@ -10,6 +10,7 @@ import android.view.textclassifier.TextClassifier
 class App : Application() {
     val cleaner by lazy { Cleaner(asset("rules.txt"), asset("redirects.txt")) }
     val browsers by lazy { Browsers(this) }
+    val setup by lazy { Setup(this) }
 
     override fun onCreate() {
         super.onCreate()
@@ -33,12 +34,14 @@ class App : Application() {
         }
         description.extras?.let { clip.description.extras = it }
         clipboard.setPrimaryClip(clip)
+        setup.count()
         return true
     }
 
     fun writeClipboard(text: String) {
         getSystemService(ClipboardManager::class.java)
             .setPrimaryClip(ClipData.newPlainText(getString(R.string.clip_label), text))
+        setup.count()
     }
 
     private fun mayHoldLink(description: ClipDescription): Boolean {

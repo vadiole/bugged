@@ -1,6 +1,7 @@
 package vadiole.bugged
 
 import android.accessibilityservice.AccessibilityService
+import android.content.Intent
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.Handler
@@ -33,6 +34,16 @@ class ClipboardService : AccessibilityService() {
     }
 
     override fun onInterrupt() = Unit
+
+    override fun onServiceConnected() {
+        super.onServiceConnected()
+        instance = this
+    }
+
+    override fun onUnbind(intent: Intent?): Boolean {
+        if (instance === this) instance = null
+        return super.onUnbind(intent)
+    }
 
     override fun onDestroy() {
         handler.removeCallbacksAndMessages(null)
@@ -129,18 +140,21 @@ class ClipboardService : AccessibilityService() {
         getSystemService(WindowManager::class.java).removeView(view)
     }
 
-    private companion object {
-        const val TAG = "Bugged"
-        const val SYSTEM_UI = "com.android.systemui"
-        const val PREVIEW_PREFIX = "com.android.systemui:id/clipboard"
-        const val PREVIEW_TEXT = "com.android.systemui:id/text_preview"
-        const val PREVIEW_LIMIT = 500
-        const val LABEL_LIMIT = 24
-        const val WATCH = 10_000L
-        const val EVENTS = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or
+    companion object {
+        var instance: ClipboardService? = null
+            private set
+
+        private const val TAG = "Bugged"
+        private const val SYSTEM_UI = "com.android.systemui"
+        private const val PREVIEW_PREFIX = "com.android.systemui:id/clipboard"
+        private const val PREVIEW_TEXT = "com.android.systemui:id/text_preview"
+        private const val PREVIEW_LIMIT = 500
+        private const val LABEL_LIMIT = 24
+        private const val WATCH = 10_000L
+        private const val EVENTS = AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED or
             AccessibilityEvent.TYPE_VIEW_CLICKED or
             AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED
-        const val SETTLE = 150L
-        const val TIMEOUT = 3000L
+        private const val SETTLE = 150L
+        private const val TIMEOUT = 3000L
     }
 }

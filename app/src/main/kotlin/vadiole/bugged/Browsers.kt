@@ -20,7 +20,18 @@ class Browsers(private val context: Context) {
     fun selected(): Browser? {
         val all = all()
         val saved = preferences.getString(KEY, null)
-        return all.firstOrNull { it.packageName == saved } ?: all.firstOrNull()
+        val default = default()
+        return all.firstOrNull { it.packageName == saved } ?: all.firstOrNull { it.packageName == default } ?: all.firstOrNull()
+    }
+
+    fun remember() {
+        if (preferences.getString(KEY, null) == null) selected()?.let(::select)
+    }
+
+    private fun default(): String? {
+        val view = Intent(Intent.ACTION_VIEW, Uri.parse("http://")).addCategory(Intent.CATEGORY_BROWSABLE)
+        val name = context.packageManager.resolveActivity(view, PackageManager.MATCH_DEFAULT_ONLY)?.activityInfo?.packageName
+        return name?.takeIf { it != "android" && !it.startsWith(FAMILY) }
     }
 
     fun target(): String? {
@@ -33,8 +44,9 @@ class Browsers(private val context: Context) {
         val flags = PackageManager.MATCH_ALL or PackageManager.GET_RESOLVED_FILTER
         return context.packageManager.queryIntentActivities(probe(), flags)
             .filter { it.filter?.hasCategory(Intent.CATEGORY_DEFAULT) != false }
+            .filter { (it.filter?.countDataAuthorities() ?: 0) == 0 }
             .map { it.activityInfo.packageName }
-            .filter { it != context.packageName }
+            .filter { !it.startsWith(FAMILY) }
             .distinct()
     }
 
@@ -47,5 +59,6 @@ class Browsers(private val context: Context) {
 
     private companion object {
         const val KEY = "package"
+        const val FAMILY = "vadiole.bugged"
     }
 }

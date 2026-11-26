@@ -1,230 +1,223 @@
 package vadiole.bugged
 
+import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.AlertDialog
 import android.app.role.RoleManager
+import android.content.ActivityNotFoundException
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
-import android.graphics.Typeface
+import android.database.ContentObserver
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.SystemClock
 import android.provider.Settings
-import android.util.TypedValue
-import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-import android.view.WindowInsets
-import android.view.accessibility.AccessibilityNodeInfo
-import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction
 import android.widget.FrameLayout
-import android.widget.LinearLayout
-import android.widget.ScrollView
-import android.widget.TextView
+import android.window.BackEvent
+import android.window.OnBackAnimationCallback
+import android.window.OnBackInvokedCallback
+import android.window.OnBackInvokedDispatcher
+import vadiole.bugged.ui.AboutScreen
+import vadiole.bugged.ui.BrowserSheet
+import vadiole.bugged.ui.Colors
+import vadiole.bugged.ui.CopySheet
+import vadiole.bugged.ui.HomeScreen
+import vadiole.bugged.ui.Host
+import vadiole.bugged.ui.Nav
+import vadiole.bugged.ui.OpenSheet
+import vadiole.bugged.ui.Route
+import vadiole.bugged.ui.WelcomeScreen
 
-class MainActivity : Activity() {
-    private lateinit var clipboardState: TextView
-    private lateinit var linksState: TextView
-    private lateinit var browserState: TextView
-    private lateinit var browserRow: ViewGroup
+class MainActivity : Activity(), Host {
+    override lateinit var colors: Colors
+        private set
+    override val setup get() = App.instance.setup
+    override val browsers get() = App.instance.browsers
+
+    private lateinit var nav: Nav
+    private var backCallback: Any? = null
+    private var backRegistered = false
+    private var roleAsked = 0L
+
+    private val settingsObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
+        override fun onChange(selfChange: Boolean) = sync()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val content = object : LinearLayout(this) {
-            override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-                val max = dp(MAX_CONTENT_WIDTH)
-                val capped = if (MeasureSpec.getSize(widthMeasureSpec) > max) {
-                    MeasureSpec.makeMeasureSpec(max, MeasureSpec.EXACTLY)
-                } else {
-                    widthMeasureSpec
-                }
-                super.onMeasure(capped, heightMeasureSpec)
+        colors = Colors.of(this)
+        edgeToEdge()
+        val container = FrameLayout(this)
+        setContentView(container)
+        nav = Nav(container) { route ->
+            when (route) {
+                Route.Welcome -> WelcomeScreen(this, this)
+                Route.Home -> HomeScreen(this, this)
+                Route.About -> AboutScreen(this, this)
+                Route.Copy -> CopySheet(this, this)
+                Route.Open -> OpenSheet(this, this)
+                Route.Browser -> BrowserSheet(this, this)
             }
-        }.apply {
-            orientation = LinearLayout.VERTICAL
         }
-        val title = text(R.string.app_name, 34f, android.R.attr.textColorPrimary).apply {
-            typeface = Typeface.DEFAULT_BOLD
-            isAccessibilityHeading = true
-        }
-        content.addView(title, column(top = 40))
-        content.addView(text(R.string.app_description, 16f, android.R.attr.textColorSecondary), column(top = 8, bottom = 24))
-        clipboardState = state()
-        linksState = state()
-        browserState = state()
-        content.row(R.string.clipboard_title, clipboardState, R.string.clipboard_description, R.string.clipboard_action) {
-            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-        }
-        content.row(R.string.links_title, linksState, R.string.links_description, R.string.links_action, ::askForLinks)
-        browserRow = content.row(R.string.browser_title, browserState, R.string.browser_description, R.string.browser_action, ::pickBrowser)
+        nav.onChange = ::updateBack
+        val restored = savedInstanceState?.getBundle(KEY_NAV)?.let(nav::restore) ?: false
+        if (!restored) nav.setRoot(if (setup.welcomed) Route.Home else Route.Welcome)
+    }
 
-        val scroll = object : ScrollView(this) {
-            override fun shouldDelayChildPressedState() = false
-        }.apply {
-            id = R.id.scroll
-            isVerticalScrollBarEnabled = false
-            isFocusable = false
-            addView(content, FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT, Gravity.CENTER_HORIZONTAL))
-            setOnApplyWindowInsetsListener { view, insets ->
-                val bars = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    insets.getInsets(WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout())
-                } else {
-                    @Suppress("DEPRECATION")
-                    insets.systemWindowInsets
-                }
-                view.setPadding(bars.left, bars.top, bars.right, 0)
-                content.setPadding(0, 0, 0, bars.bottom + dp(16))
-                insets
-            }
-        }
-        setContentView(scroll)
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBundle(KEY_NAV, nav.save())
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val setting = Settings.Secure.getUriFor(Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
+        contentResolver.registerContentObserver(setting, false, settingsObserver)
+    }
+
+    override fun onStop() {
+        contentResolver.unregisterContentObserver(settingsObserver)
+        super.onStop()
     }
 
     override fun onResume() {
         super.onResume()
-        refresh()
+        sync()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) App.instance.cleanClipboard()
+        if (hasFocus && App.instance.cleanClipboard()) nav.refresh()
     }
 
-    private fun refresh() {
-        clipboardState.setText(if (clipboardEnabled()) R.string.on else R.string.off)
-        linksState.setText(if (linksEnabled()) R.string.on else R.string.off)
-        val browsers = App.instance.browsers
-        val selected = browsers.selected()
-        browserState.text = selected?.label ?: getString(R.string.browser_none)
-        browserRow.enable(selected != null)
+    private fun sync() {
+        when (nav.current()?.route) {
+            Route.Copy -> if (setup.copyOn()) nav.pop()
+            Route.Open -> if (setup.openOn()) nav.pop()
+            else -> Unit
+        }
+        nav.refresh()
     }
 
-    private fun clipboardEnabled(): Boolean {
-        val enabled = Settings.Secure.getString(contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
-        val service = ComponentName(this, ClipboardService::class.java)
-        return enabled.orEmpty().split(':').any { ComponentName.unflattenFromString(it) == service }
+    override fun go(route: Route) = nav.push(route)
+
+    override fun start() {
+        setup.welcomed = true
+        nav.push(Route.Home, clear = true)
     }
 
-    private fun linksEnabled() = getSystemService(RoleManager::class.java).isRoleHeld(RoleManager.ROLE_BROWSER)
+    override fun back() {
+        nav.pop()
+    }
 
-    private fun askForLinks() {
+    override fun openAccessibility() {
+        val service = ComponentName(this, ClipboardService::class.java).flattenToString()
+        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+            .putExtra(FRAGMENT_ARG_KEY, service)
+            .putExtra(SHOW_FRAGMENT_ARGS, Bundle().apply { putString(FRAGMENT_ARG_KEY, service) })
+        launch(intent)
+    }
+
+    override fun turnOffCopy() {
+        val service = ClipboardService.instance
+        if (service != null) service.disableSelf() else openAccessibility()
+    }
+
+    override fun requestBrowser() {
         val roles = getSystemService(RoleManager::class.java)
         if (roles.isRoleAvailable(RoleManager.ROLE_BROWSER) && !roles.isRoleHeld(RoleManager.ROLE_BROWSER)) {
+            roleAsked = SystemClock.elapsedRealtime()
             @Suppress("DEPRECATION")
-            startActivityForResult(roles.createRequestRoleIntent(RoleManager.ROLE_BROWSER), 0)
+            startActivityForResult(roles.createRequestRoleIntent(RoleManager.ROLE_BROWSER), REQUEST_ROLE)
         } else {
-            startActivity(Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS))
+            openDefaultApps()
         }
     }
 
-    private fun pickBrowser() {
-        val browsers = App.instance.browsers
-        val all = browsers.all()
-        if (all.isEmpty()) return
-        val current = all.indexOfFirst { it.packageName == browsers.selected()?.packageName }
-        AlertDialog.Builder(this)
-            .setTitle(R.string.browser_title)
-            .setSingleChoiceItems(all.map { it.label }.toTypedArray(), current) { dialog, which ->
-                browsers.select(all[which])
-                refresh()
-                dialog.dismiss()
+    override fun openDefaultApps() = launch(Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS))
+
+    @Deprecated("Deprecated in Java")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != REQUEST_ROLE || resultCode == RESULT_OK) return
+        if (SystemClock.elapsedRealtime() - roleAsked < DENIED_WITHOUT_ASKING) openDefaultApps()
+    }
+
+    private fun launch(intent: Intent) {
+        try {
+            startActivity(intent)
+        } catch (_: ActivityNotFoundException) {
+            startActivity(Intent(Settings.ACTION_SETTINGS))
+        }
+    }
+
+    private fun edgeToEdge() {
+        window.setBackgroundDrawable(ColorDrawable(colors.surface))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            window.setDecorFitsSystemWindows(false)
+        } else {
+            @Suppress("DEPRECATION")
+            window.decorView.systemUiVisibility = window.decorView.systemUiVisibility or
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+        }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            @Suppress("DEPRECATION")
+            window.statusBarColor = Color.TRANSPARENT
+            @Suppress("DEPRECATION")
+            window.navigationBarColor = Color.TRANSPARENT
+        }
+        window.isNavigationBarContrastEnforced = false
+    }
+
+    private fun updateBack() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        val callback = (backCallback ?: createBack().also { backCallback = it }) as OnBackInvokedCallback
+        val wanted = nav.canPop()
+        if (wanted == backRegistered) return
+        backRegistered = wanted
+        if (wanted) {
+            onBackInvokedDispatcher.registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, callback)
+        } else {
+            onBackInvokedDispatcher.unregisterOnBackInvokedCallback(callback)
+        }
+    }
+
+    private fun createBack(): Any = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        object : OnBackAnimationCallback {
+            override fun onBackStarted(backEvent: BackEvent) {
+                nav.startBack(backEvent.swipeEdge == BackEvent.EDGE_LEFT, backEvent.touchY)
             }
-            .show()
-    }
 
-    private fun LinearLayout.row(title: Int, state: TextView, description: Int, action: Int, onClick: () -> Unit): ViewGroup {
-        val row = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            setPaddingRelative(dp(24), dp(14), dp(24), dp(14))
-            minimumHeight = dp(56)
-            gravity = Gravity.CENTER_VERTICAL
-            addView(TitleLine(context, text(title, 18f, android.R.attr.textColorPrimary), state, dp(16)), MATCH_PARENT, WRAP_CONTENT)
-            addView(
-                text(description, 14f, android.R.attr.textColorSecondary),
-                LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply { topMargin = dp(4) },
-            )
-            setBackgroundResource(resolve(android.R.attr.selectableItemBackground))
-            setOnClickListener { onClick() }
-            accessibilityDelegate = object : View.AccessibilityDelegate() {
-                override fun onInitializeAccessibilityNodeInfo(host: View, info: AccessibilityNodeInfo) {
-                    super.onInitializeAccessibilityNodeInfo(host, info)
-                    if (host.isEnabled) info.addAction(AccessibilityAction(AccessibilityNodeInfo.ACTION_CLICK, getString(action)))
-                }
-            }
-        }
-        addView(row, MATCH_PARENT, WRAP_CONTENT)
-        return row
-    }
+            override fun onBackProgressed(backEvent: BackEvent) = nav.progressBack(backEvent.progress, backEvent.touchY)
 
-    private fun View.enable(enabled: Boolean) {
-        isEnabled = enabled
-        if (this is ViewGroup) for (index in 0 until childCount) getChildAt(index).enable(enabled)
-    }
+            override fun onBackCancelled() = nav.cancelBack()
 
-    private fun state() = text(0, 16f, android.R.attr.textColorSecondary)
-
-    private fun text(resource: Int, size: Float, color: Int) = TextView(this).apply {
-        if (resource != 0) setText(resource)
-        textSize = size
-        setTextColor(getColorStateList(resolve(color)))
-    }
-
-    private fun column(top: Int = 0, bottom: Int = 0) = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
-        marginStart = dp(24)
-        marginEnd = dp(24)
-        topMargin = dp(top)
-        bottomMargin = dp(bottom)
-    }
-
-    private fun resolve(attribute: Int) = TypedValue().also { theme.resolveAttribute(attribute, it, true) }.resourceId
-
-    private fun dp(value: Int) = (value * resources.displayMetrics.density).toInt()
-
-    private class TitleLine(context: Context, private val title: TextView, private val value: TextView, private val gap: Int) : ViewGroup(context) {
-        private var stacked = false
-
-        init {
-            addView(title)
-            addView(value)
-        }
-
-        override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-            val width = MeasureSpec.getSize(widthMeasureSpec)
-            val unbounded = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
-            title.measure(unbounded, unbounded)
-            value.measure(unbounded, unbounded)
-            stacked = title.measuredWidth + gap + value.measuredWidth > width
-            val height = if (stacked) {
-                val loose = MeasureSpec.makeMeasureSpec(width, MeasureSpec.AT_MOST)
-                title.measure(loose, unbounded)
-                value.measure(loose, unbounded)
-                title.measuredHeight + value.measuredHeight
-            } else {
-                val ascent = maxOf(title.baseline, value.baseline)
-                maxOf(ascent - title.baseline + title.measuredHeight, ascent - value.baseline + value.measuredHeight)
-            }
-            setMeasuredDimension(width, height)
-        }
-
-        override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
-            val width = r - l
-            val rtl = layoutDirection == LAYOUT_DIRECTION_RTL
-            if (stacked) {
-                place(title, if (rtl) width - title.measuredWidth else 0, 0)
-                place(value, if (rtl) width - value.measuredWidth else 0, title.measuredHeight)
-            } else {
-                val ascent = maxOf(title.baseline, value.baseline)
-                place(title, if (rtl) width - title.measuredWidth else 0, ascent - title.baseline)
-                place(value, if (rtl) 0 else width - value.measuredWidth, ascent - value.baseline)
+            override fun onBackInvoked() {
+                nav.pop()
             }
         }
+    } else {
+        OnBackInvokedCallback { nav.pop() }
+    }
 
-        private fun place(view: View, x: Int, y: Int) = view.layout(x, y, x + view.measuredWidth, y + view.measuredHeight)
+    @SuppressLint("GestureBackNavigation")
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        @Suppress("DEPRECATION")
+        if (!nav.pop()) super.onBackPressed()
     }
 
     private companion object {
-        const val MAX_CONTENT_WIDTH = 560
+        const val KEY_NAV = "nav"
+        const val REQUEST_ROLE = 1
+        const val DENIED_WITHOUT_ASKING = 400L
+        const val FRAGMENT_ARG_KEY = ":settings:fragment_args_key"
+        const val SHOW_FRAGMENT_ARGS = ":settings:show_fragment_args"
     }
 }

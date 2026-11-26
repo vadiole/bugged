@@ -18,7 +18,9 @@ class OpenActivity : Activity() {
     }
 
     private fun forward(link: String, browser: String): Boolean {
-        val forward = Intent(Intent.ACTION_VIEW, Uri.parse(App.instance.cleaner.clean(link)))
+        val cleaned = App.instance.cleaner.clean(link)
+        if (cleaned != link) App.instance.setup.count()
+        val forward = Intent(Intent.ACTION_VIEW, Uri.parse(cleaned))
             .setPackage(browser)
             .addCategory(Intent.CATEGORY_BROWSABLE)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
