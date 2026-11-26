@@ -47,7 +47,7 @@ class Browsers(private val context: Context) {
     fun target(): String? {
         val saved = preferences.getString(KEY, null)
         if (saved != null && context.packageManager.resolveActivity(probe().setPackage(saved), 0) != null) return saved
-        return selected()?.packageName
+        return default()?.takeIf { it in packages() } ?: selected()?.packageName
     }
 
     private fun packages(): List<String> {

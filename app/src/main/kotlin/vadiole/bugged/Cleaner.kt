@@ -10,40 +10,55 @@ class Cleaner(rules: String, redirects: String) {
         fun matches(name: String) = name in exact || prefixes.any { name.startsWith(it) }
     }
 
-    private class Wrapper(val host: String, val path: String, val params: List<String>)
+    private class Wrapper(val order: Int, val path: String, val params: List<String>)
 
-    private val params: Map<String, Params> = rules.lineSequence()
-        .map { it.trim().lowercase().split(' ') }
-        .filter { it.size > 1 }
-        .associate { it[0] to Params(it.drop(1)) }
+    class Cleaned(val text: String, val links: Int)
 
-    private val wrappers: List<Wrapper> = redirects.lineSequence()
-        .map { it.trim().split(' ') }
-        .filter { it.size > 1 }
-        .map {
-            val target = it[0]
-            val slash = target.indexOf('/')
-            Wrapper(
-                host = (if (slash < 0) target else target.substring(0, slash)).lowercase(),
-                path = if (slash < 0) "/" else target.substring(slash),
-                params = it.drop(1),
-            )
+    private val params = HashMap<String, Params>()
+    private val wrappers = HashMap<String, MutableList<Wrapper>>()
+
+    init {
+        val shared = HashMap<String, Params>()
+        lines(rules) { line ->
+            val space = line.indexOf(' ')
+            if (space > 0) {
+                val names = line.substring(space + 1).lowercase()
+                params[line.substring(0, space).lowercase()] = shared.getOrPut(names) { Params(names.split(' ')) }
+            }
         }
-        .toList()
-
-    fun cleanText(text: String): String = LINK.replace(text) {
-        val link = it.value.trimEnd(*TRAILING)
-        clean(link) + it.value.substring(link.length)
+        var order = 0
+        lines(redirects) { line ->
+            val parts = line.split(' ')
+            if (parts.size > 1) {
+                val target = parts[0]
+                val slash = target.indexOf('/')
+                val host = (if (slash < 0) target else target.substring(0, slash)).lowercase()
+                val path = if (slash < 0) "/" else target.substring(slash)
+                wrappers.getOrPut(host) { ArrayList(1) }.add(Wrapper(order++, path, parts.subList(1, parts.size)))
+            }
+        }
     }
 
-    fun dirtyLinks(text: String): Int = LINK.findAll(text).count {
-        val link = it.value.trimEnd(*TRAILING)
-        clean(link) != link
+    fun cleanText(text: String): String = cleanLinks(text).text
+
+    fun cleanLinks(text: String): Cleaned {
+        if ("://" !in text) return Cleaned(text, 0)
+        var links = 0
+        val cleaned = LINK.replace(text) {
+            val link = it.value.trimEnd(*TRAILING)
+            val clean = clean(link)
+            if (clean != link) links++
+            clean + it.value.substring(link.length)
+        }
+        return Cleaned(cleaned, links)
     }
 
-    fun cleanHtml(html: String): String = LINK.replace(html) {
-        val link = it.value.trimEnd(*TRAILING)
-        clean(link.replace("&amp;", "&")).replace("&", "&amp;") + it.value.substring(link.length)
+    fun cleanHtml(html: String): String {
+        if ("://" !in html) return html
+        return LINK.replace(html) {
+            val link = it.value.trimEnd(*TRAILING)
+            clean(link.replace("&amp;", "&")).replace("&", "&amp;") + it.value.substring(link.length)
+        }
     }
 
     fun clean(url: String): String = clean(url, 0)
@@ -65,20 +80,20 @@ class Cleaner(rules: String, redirects: String) {
         val pairs = if (query.isEmpty()) emptyList() else query.split('&')
 
         if (depth < MAX_DEPTH) {
-            for (wrapper in wrappers) {
-                if (!covers(wrapper.host, host) || !path.startsWith(wrapper.path)) continue
+            for (wrapper in candidates(host)) {
+                if (!path.startsWith(wrapper.path)) continue
                 val rest = path.substring(wrapper.path.length)
                 for (name in wrapper.params) {
                     val target = when (name) {
-                        QUERY -> if (SCHEME.containsMatchIn(query)) query + fragment else decode(query)
-                        SEGMENT -> rest.split('/').firstNotNullOfOrNull { part -> decode(part)?.takeIf(SCHEME::containsMatchIn) }
+                        QUERY -> if (hasScheme(query)) query + fragment else decode(query)
+                        SEGMENT -> rest.split('/').firstNotNullOfOrNull { part -> decode(part)?.takeIf(::hasScheme) }
                         SEGMENT_HTTPS -> bare(decode(rest.substringBefore('/')))?.let { "https://$it" }
                         SEGMENT_HTTP -> bare(decode(rest.substringBefore('/')))?.let { "http://$it" }
                         REST -> embedded(rest, url.substring(queryAt))
                         REST_HTTPS -> bare(rest)?.let { "https://$it" + url.substring(queryAt) }
                         else -> pairs.firstOrNull { it.substringBefore('=') == name }?.substringAfter('=', "")?.let(::decode)
                     }
-                    if (target != null && SCHEME.containsMatchIn(target)) {
+                    if (target != null && hasScheme(target)) {
                         return clean(target, depth + 1)
                     }
                 }
@@ -117,9 +132,9 @@ class Cleaner(rules: String, redirects: String) {
         while (at < rest.length) {
             if (rest.startsWith("http", at, ignoreCase = true)) {
                 val raw = rest.substring(at)
-                if (SCHEME.containsMatchIn(raw)) return raw + tail
+                if (hasScheme(raw)) return raw + tail
                 val decoded = decode(raw)
-                if (decoded != null && SCHEME.containsMatchIn(decoded)) return decoded
+                if (decoded != null && hasScheme(decoded)) return decoded
             }
             val next = rest.indexOf('/', at)
             if (next < 0) break
@@ -128,12 +143,38 @@ class Cleaner(rules: String, redirects: String) {
         return null
     }
 
-    private fun covers(rule: String, host: String) = host == rule || host.endsWith(".$rule")
+    private fun candidates(host: String): List<Wrapper> {
+        var found: List<Wrapper> = emptyList()
+        var suffix = host
+        while (true) {
+            wrappers[suffix]?.let { found = if (found.isEmpty()) it else (found + it).sortedBy(Wrapper::order) }
+            val dot = suffix.indexOf('.')
+            if (dot < 0) break
+            suffix = suffix.substring(dot + 1)
+        }
+        return found
+    }
 
-    private fun decode(value: String): String? = try {
-        URLDecoder.decode(value.replace("+", "%2B"), "UTF-8")
-    } catch (_: IllegalArgumentException) {
-        null
+    private fun hasScheme(value: String) =
+        value.startsWith("http://", ignoreCase = true) || value.startsWith("https://", ignoreCase = true)
+
+    private fun decode(value: String): String? {
+        if ('%' !in value) return value
+        return try {
+            URLDecoder.decode(value.replace("+", "%2B"), "UTF-8")
+        } catch (_: IllegalArgumentException) {
+            null
+        }
+    }
+
+    private inline fun lines(text: String, block: (String) -> Unit) {
+        var at = 0
+        while (at < text.length) {
+            val end = text.indexOf('\n', at).let { if (it < 0) text.length else it }
+            val line = text.substring(at, end).trim()
+            if (line.isNotEmpty()) block(line)
+            at = end + 1
+        }
     }
 
     private companion object {
@@ -145,7 +186,6 @@ class Cleaner(rules: String, redirects: String) {
         const val REST = ":rest"
         const val REST_HTTPS = ":rest-https"
         val HOST = Regex("^[a-z0-9-]+(\\.[a-z0-9-]+)+(:\\d+)?([/?#]|$)", RegexOption.IGNORE_CASE)
-        val SCHEME = Regex("^https?://", RegexOption.IGNORE_CASE)
         val LINK = Regex("""https?://[^\s<>"]+""", RegexOption.IGNORE_CASE)
         val TRAILING = charArrayOf('.', ',', ';', ':', '!', '?', ')', ']', '}', '\'')
     }

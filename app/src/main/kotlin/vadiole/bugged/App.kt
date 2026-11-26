@@ -20,14 +20,20 @@ class App : Application() {
         instance = this
     }
 
-    fun cleanClipboard(): Boolean {
+    fun warm() {
+        cleaner
+        setup
+    }
+
+    fun cleanClipboard(): String? {
         val clipboard = getSystemService(ClipboardManager::class.java)
-        val description = clipboard.primaryClipDescription ?: return false
-        if (!mayHoldLink(description)) return false
-        val item = clipboard.primaryClip?.takeIf { it.itemCount == 1 }?.getItemAt(0) ?: return false
-        val text = item.text?.toString() ?: return false
-        val cleaned = cleaner.cleanText(text)
-        if (cleaned == text) return false
+        val description = clipboard.primaryClipDescription ?: return null
+        if (!mayHoldLink(description)) return null
+        val item = clipboard.primaryClip?.takeIf { it.itemCount == 1 }?.getItemAt(0) ?: return null
+        val text = item.text?.toString() ?: return null
+        val result = cleaner.cleanLinks(text)
+        val cleaned = result.text
+        if (cleaned == text) return null
         val label = getString(R.string.clip_label)
         val html = item.htmlText
         val clip = if (html == null) {
@@ -37,8 +43,8 @@ class App : Application() {
         }
         description.extras?.let { clip.description.extras = it }
         clipboard.setPrimaryClip(clip)
-        count(cleaned, cleaner.dirtyLinks(text))
-        return true
+        count(cleaned, result.links)
+        return cleaned
     }
 
     fun writeClipboard(text: String) {
