@@ -7,11 +7,33 @@ import android.content.ClipboardManager
 import android.os.Build
 import android.os.SystemClock
 import android.view.textclassifier.TextClassifier
+import java.io.InputStreamReader
 
 class App : Application() {
-    val cleaner by lazy { Cleaner(asset("rules.txt"), asset("redirects.txt")) }
-    val browsers by lazy { Browsers(this) }
-    val setup by lazy { Setup(this) }
+    @Volatile
+    private var cleanerOrNull: Cleaner? = null
+
+    @Volatile
+    private var browsersOrNull: Browsers? = null
+
+    @Volatile
+    private var setupOrNull: Setup? = null
+
+    val cleaner: Cleaner
+        get() = cleanerOrNull ?: synchronized(this) {
+            cleanerOrNull ?: Cleaner(asset("rules.txt"), asset("redirects.txt")).also { cleanerOrNull = it }
+        }
+
+    val browsers: Browsers
+        get() = browsersOrNull ?: synchronized(this) {
+            browsersOrNull ?: Browsers(this).also { browsersOrNull = it }
+        }
+
+    val setup: Setup
+        get() = setupOrNull ?: synchronized(this) {
+            setupOrNull ?: Setup(this).also { setupOrNull = it }
+        }
+
     private var lastCleaned = 0
     private var lastCleanedAt = 0L
 
@@ -69,7 +91,14 @@ class App : Application() {
         return description.getConfidenceScore(TextClassifier.TYPE_URL) > 0f
     }
 
-    private fun asset(name: String) = assets.open(name).bufferedReader().use { it.readText() }
+    private fun asset(name: String): String {
+        val reader = InputStreamReader(assets.open(name), "UTF-8")
+        try {
+            return reader.readText()
+        } finally {
+            reader.close()
+        }
+    }
 
     companion object {
         private const val SAME_COPY = 5000L

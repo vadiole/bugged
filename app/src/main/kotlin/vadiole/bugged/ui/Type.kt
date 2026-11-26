@@ -30,8 +30,14 @@ object Type {
     val labelLarge = TextStyle(14f, 20f, 0.1f, 500, false)
     val labelSmall = TextStyle(11f, 16f, 0.5f, 500, false)
 
-    val brand: Typeface by lazy { system("config_headlineFontFamily") }
-    val plain: Typeface by lazy { system("config_bodyFontFamily") }
+    private var brandOrNull: Typeface? = null
+    private var plainOrNull: Typeface? = null
+
+    val brand: Typeface
+        get() = brandOrNull ?: system("config_headlineFontFamily").also { brandOrNull = it }
+
+    val plain: Typeface
+        get() = plainOrNull ?: system("config_bodyFontFamily").also { plainOrNull = it }
 
     @SuppressLint("DiscouragedApi")
     private fun system(name: String): Typeface {

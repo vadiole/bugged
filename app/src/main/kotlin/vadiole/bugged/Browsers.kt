@@ -21,8 +21,8 @@ class Browsers(private val context: Context) {
     private fun load(): List<Browser> {
         val manager = context.packageManager
         return packages()
-            .map { Browser(it, manager.getApplicationLabel(manager.getApplicationInfo(it, 0)).toString()) }
-            .sortedBy { it.label.lowercase() }
+            .mapTo(ArrayList()) { Browser(it, manager.getApplicationLabel(manager.getApplicationInfo(it, 0)).toString()) }
+            .apply { sortBy { it.label.lowercase() } }
     }
 
     fun selected(all: List<Browser> = all()): Browser? {
@@ -55,8 +55,8 @@ class Browsers(private val context: Context) {
         return context.packageManager.queryIntentActivities(probe(), flags)
             .filter { it.filter?.hasCategory(Intent.CATEGORY_DEFAULT) != false }
             .map { it.activityInfo.packageName }
-            .filter { !it.startsWith(FAMILY) }
-            .distinct()
+            .filterTo(LinkedHashSet()) { !it.startsWith(FAMILY) }
+            .let(::ArrayList)
     }
 
     private fun probe() = Intent(Intent.ACTION_VIEW, Uri.parse("https://example.com"))

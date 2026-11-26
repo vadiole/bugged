@@ -13,7 +13,6 @@ import android.view.View
 import android.view.WindowManager
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import kotlin.concurrent.thread
 
 class ClipboardService : AccessibilityService() {
     private val handler = Handler(Looper.getMainLooper())
@@ -57,7 +56,7 @@ class ClipboardService : AccessibilityService() {
                 eventTypes = AccessibilityEvent.TYPE_VIEW_CLICKED or AccessibilityEvent.TYPE_NOTIFICATION_STATE_CHANGED
             }
         }
-        thread { App.instance.warm() }
+        Thread { App.instance.warm() }.start()
     }
 
     override fun onUnbind(intent: Intent?): Boolean {

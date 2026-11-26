@@ -31,7 +31,7 @@ class Setup(private val context: Context) {
     fun copyOn(): Boolean {
         val enabled = Settings.Secure.getString(context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
         val service = ComponentName(context, ClipboardService::class.java)
-        return enabled.orEmpty().split(':').any { ComponentName.unflattenFromString(it) == service }
+        return enabled.orEmpty().splitBy(':').any { ComponentName.unflattenFromString(it) == service }
     }
 
     fun openOn(): Boolean = context.getSystemService(RoleManager::class.java).isRoleHeld(RoleManager.ROLE_BROWSER)

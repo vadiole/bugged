@@ -91,7 +91,7 @@ class Nav(private val container: FrameLayout, private val provide: (Route) -> De
 
     fun restore(bundle: Bundle): Boolean {
         val names = bundle.getStringArrayList(KEY_ROUTES)
-        val routes = names?.mapNotNull { name -> Route.entries.firstOrNull { it.name == name } }
+        val routes = names?.mapNotNull { name -> Route.values().firstOrNull { it.name == name } }
         if (routes.isNullOrEmpty() || routes.size != names.size) return false
         container.removeAllViews()
         stack.clear()
@@ -104,7 +104,7 @@ class Nav(private val container: FrameLayout, private val provide: (Route) -> De
             bundle.getSparseParcelableArray<Parcelable>(KEY_STATE + index)?.let(destination::restoreHierarchyState)
         }
         var covered = false
-        for (index in stack.indices.reversed()) {
+        for (index in stack.lastIndex downTo 0) {
             val destination = stack[index]
             destination.visibility = if (covered) View.INVISIBLE else View.VISIBLE
             if (destination !is Sheet) covered = true

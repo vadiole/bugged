@@ -1,37 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Accessibility label of the dimmed area behind a bottom sheet. Tapping it closes the sheet. -->
-    <string name="close">Fechar</string>
-    <!-- Accessibility label of the back arrow in the top bar. -->
-    <string name="back">Voltar</string>
-    <!-- Status label on a feature card: the feature is on. -->
-    <string name="on">Ativado</string>
-    <!-- Status label on a feature card: the feature is off. -->
-    <string name="off">Desativado</string>
-    <!-- Button on a feature card. -->
-    <string name="turn_on">Ativar</string>
-    <!-- Button on a feature card. -->
-    <string name="turn_off">Desativar</string>
-    <!-- Screen reader label of the "Turn on" button. %1$s is the feature, "Links you copy" or "Links you open". -->
-    <string name="turn_on_feature">Ativar %1$s</string>
-    <!-- Screen reader label of the "Turn off" button. %1$s is the feature, "Links you copy" or "Links you open". -->
-    <string name="turn_off_feature">Desativar %1$s</string>
-    <string name="not_now">Agora não</string>
-    <!-- Button that opens a list of browsers to pick from. -->
-    <string name="change">Alterar</string>
-    <!-- Screen reader label of the "Change" button. -->
-    <string name="change_browser">Alterar navegador</string>
-
     <!-- First screen. Headline, also the app's slogan. -->
     <string name="welcome_title">Limpe seus links</string>
     <string name="welcome_body">Muitos links carregam um rastreador que conta aos sites quem os compartilhou e em que você tocou. O Bugged protege sua privacidade removendo esse rastreador. O link abre a mesma página.</string>
     <string name="welcome_offline">Funciona offline. O Bugged não tem acesso à internet, então nada sai do seu celular.</string>
     <!-- "Accessibility" is the name of the Android settings section. Use the name Android uses in this language. -->
     <string name="welcome_access">O Bugged precisa da Acessibilidade para detectar e limpar os links que você copia.</string>
-    <string name="welcome_action">Configurar</string>
 
-    <!-- Home headline while both features are off. -->
-    <string name="home_choose">Escolha o que limpar</string>
     <string name="home_copy">Limpando os links que você copia</string>
     <string name="home_open">Limpando os links que você abre</string>
     <string name="home_both">Limpando os links que você copia e abre</string>
@@ -46,8 +21,6 @@
     <string name="copy_description">Copie um link em qualquer app e cole-o já limpo.</string>
     <string name="open_title">Links que você abre</string>
     <string name="open_description">Toque em um link em qualquer app e ele abre limpo no seu navegador.</string>
-    <!-- %1$s is a browser name, like Chrome. -->
-    <string name="open_browser">Abre no %1$s</string>
 
     <string name="copy_sheet_title">Limpar os links que você copia</string>
     <!-- "Accessibility" is the name of the Android settings section. -->
@@ -57,8 +30,6 @@
     <string name="copy_sheet_step_1">Em Configurações, toque em %1$s</string>
     <!-- Step 2. %1$s is the label of the switch in Android's Accessibility settings, "Use Bugged". -->
     <string name="copy_sheet_step_2">Ative %1$s</string>
-    <!-- Label of the switch in Android's Accessibility settings. Use Android's own wording in this language. %1$s is the app name. -->
-    <string name="copy_sheet_switch">Usar %1$s</string>
     <!-- “Restricted setting” is the title of an Android dialog, "App info" is an Android settings screen. %1$s is the menu item "Allow restricted settings". Use Android's own wording in this language. -->
     <string name="copy_sheet_restricted">Se as Configurações mostrarem “Configuração restrita”, abra as Informações do app do Bugged, toque nos 3 pontos e depois em %1$s.</string>
     <!-- Menu item on Android's App info screen. Use Android's own wording in this language. -->
@@ -71,26 +42,16 @@
     <!-- %1$s is a browser name, like Chrome. -->
     <string name="open_sheet_browser">Links limpos abrem no %1$s</string>
     <string name="open_sheet_action">Definir como padrão</string>
-    <string name="browser_none">Nenhum navegador encontrado</string>
-    <!-- Title of the list of installed browsers. -->
-    <string name="browser_title">Escolher um navegador</string>
 
     <string name="about">Sobre</string>
     <string name="about_version">Versão do app</string>
-    <string name="about_rate">Avaliar no Google Play</string>
     <string name="about_feedback">Feedback e ideias</string>
     <string name="about_feedback_note">Relate um bug ou sugira um recurso. Eu leio todos os e-mails.</string>
     <string name="about_feedback_subject">Feedback e ideias</string>
     <string name="about_author">Projetado e desenvolvido por @vadiole</string>
     <!-- Accessibility action on the version row. -->
     <string name="about_copy">Copiar informações do app e do dispositivo</string>
-    <!-- Short message after the app and device info was copied. -->
-    <string name="about_copied">Copiado</string>
-    <string name="privacy_policy">Política de privacidade</string>
 
     <!-- Shown by Android in Accessibility settings, under the app name. -->
-    <string name="service_summary">Remove rastreadores dos links copiados</string>
     <string name="service_description">Percebe quando você copia um link e remove os rastreadores dele. Para perceber uma cópia, procura os botões Copiar em que você toca e a prévia da área de transferência. O Bugged não guarda nada do que vê e não tem acesso à internet.</string>
-    <!-- Label Android may show for the cleaned clipboard content. -->
-    <string name="clip_label">Link limpo</string>
 </resources>
