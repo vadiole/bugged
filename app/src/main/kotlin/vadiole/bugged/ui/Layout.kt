@@ -1,9 +1,13 @@
 package vadiole.bugged.ui
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapShader
 import android.graphics.Canvas
+import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
+import android.graphics.Shader
 import android.graphics.drawable.AdaptiveIconDrawable
 import android.view.Gravity
 import android.view.View
@@ -50,21 +54,24 @@ class AppIcon(context: Context) : View(context) {
     private val icon = context.getDrawable(R.mipmap.ic_launcher) as? AdaptiveIconDrawable
     private val path = Path()
     private val rect = RectF()
+    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        if (w <= 0 || h <= 0) return
         rect.set(0f, 0f, w.toFloat(), h.toFloat())
         path.rewind()
         path.addSquircle(rect, w * 0.25f)
-        icon?.background?.setBounds(-w / 4, -h / 4, w * 5 / 4, h * 5 / 4)
-        icon?.foreground?.setBounds(-w / 4, -h / 4, w * 5 / 4, h * 5 / 4)
+        val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        for (layer in listOf(icon?.background, icon?.foreground)) {
+            layer?.setBounds(-w / 4, -h / 4, w * 5 / 4, h * 5 / 4)
+            layer?.draw(canvas)
+        }
+        paint.shader = BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
     }
 
     override fun onDraw(canvas: Canvas) {
-        val save = canvas.save()
-        canvas.clipPath(path)
-        icon?.background?.draw(canvas)
-        icon?.foreground?.draw(canvas)
-        canvas.restoreToCount(save)
+        canvas.drawPath(path, paint)
     }
 }
 
