@@ -52,7 +52,7 @@
 
     <string name="copy_sheet_title">Clean links you copy</string>
     <!-- "Accessibility" is the name of the Android settings section. -->
-    <string name="copy_sheet_what">Bugged uses Accessibility to detect links you copy, so it can clean them when a tracker is present.</string>
+    <string name="copy_sheet_what">Bugged uses Accessibility to detect links you copy, so it can clean them when a tracking tag is present.</string>
     <string name="copy_sheet_access">The app only looks at Copy buttons you tap and the text you copy. It never reads anything else on your screen.</string>
     <!-- Step 1. "Settings" is the Android Settings app. %1$s is the app name, Bugged. -->
     <string name="copy_sheet_step_1">In Settings, tap %1$s</string>
@@ -90,8 +90,8 @@
     <string name="privacy_policy">Privacy policy</string>
 
     <!-- Shown by Android in Accessibility settings, under the app name. -->
-    <string name="service_summary">Removes trackers from copied links</string>
-    <string name="service_description">Notices when you copy a link and removes its trackers. To notice a copy, it looks for Copy buttons you tap and the clipboard preview. Bugged keeps nothing it sees and has no internet access.</string>
+    <string name="service_summary">Removes tracking tags from copied links</string>
+    <string name="service_description">Notices when you copy a link and removes its tracking tags. To notice a copy, it looks for Copy buttons you tap and the clipboard preview. Bugged keeps nothing it sees and has no internet access.</string>
     <!-- Label Android may show for the cleaned clipboard content. -->
     <string name="clip_label">Clean link</string>
 </resources>

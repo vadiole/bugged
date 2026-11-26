@@ -206,7 +206,7 @@ class ListGroup(context: Context, private val colors: Colors) : LinearLayout(con
         val row = LinearLayout(context).apply {
             orientation = HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            minimumHeight = dp(72)
+            minimumHeight = dp(56)
             setPadding(dp(16), dp(12), dp(16), dp(12))
             background = ripple(colors.onSurface, shape)
             tag = shape
