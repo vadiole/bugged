@@ -142,3 +142,15 @@ https://click.pstmrk.it/2/example.com%2Fdocs%2Fstart/abcd/efgh http://example.co
 https://click.redditmail.com/CL0/unsubscribe/1/0100018abc https://click.redditmail.com/CL0/unsubscribe/1/0100018abc
 https://abc123.r.us-east-1.awstrack.me/L0/not-a-link/1/0100018a https://abc123.r.us-east-1.awstrack.me/L0/not-a-link/1/0100018a
 https://outgoing.prod.mozaws.net/v1/0123456789abcdef/about https://outgoing.prod.mozaws.net/v1/0123456789abcdef/about
+https://click.pstmrk.it/3s/example.com%3Fref%3Dmail/abcd/efgh https://example.com?ref=mail
+https://click.pstmrk.it/2s/example.com%2Fa/abcd https://example.com/a
+https://click.pstmrk.it/2sm/example.com%2Fa/abcd https://example.com/a
+https://click.pstmrk.it/2ts/example.com%2Fa/abcd https://example.com/a
+https://click.pstmrk.it/3ts/example.com%2Fa/abcd https://example.com/a
+https://click.pstmrk.it/2m/example.com%2Fa/abcd http://example.com/a
+https://click.pstmrk.it/3/example.com%2Fa/abcd http://example.com/a
+https://anonym.to/?https://example.com/page https://example.com/page
+https://anonym.to/?page=2 https://anonym.to/?page=2
+https://prod.outgoing.prod.webservices.mozgcp.net/v1/0123456789abcdef/https%3A//example.com/addon https://example.com/addon
+https://prod.outgoing.prod.webservices.mozgcp.net/v1/0123456789abcdef/about https://prod.outgoing.prod.webservices.mozgcp.net/v1/0123456789abcdef/about
+https://example-com.cdn.ampproject.org/c/s/ https://example-com.cdn.ampproject.org/c/s/

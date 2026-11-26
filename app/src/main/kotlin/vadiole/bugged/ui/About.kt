@@ -5,6 +5,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.view.Gravity
@@ -14,7 +15,7 @@ import android.widget.Toast
 import vadiole.bugged.BuildConfig
 import vadiole.bugged.R
 
-class AboutScreen(context: Context, host: Host) : Screen(context, host.colors, R.string.about) {
+class AboutScreen(context: Context, private val host: Host) : Screen(context, host.colors, R.string.about) {
     private val version = "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})"
 
     init {
@@ -67,8 +68,14 @@ class AboutScreen(context: Context, host: Host) : Screen(context, host.colors, R
     }
 
     private fun visit(url: String) {
+        val view = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        val handler = context.packageManager.resolveActivity(view, PackageManager.MATCH_DEFAULT_ONLY)?.activityInfo?.packageName
+        if (handler == context.packageName && host.browsers.target() == null) {
+            copy(url)
+            return
+        }
         try {
-            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+            context.startActivity(view)
         } catch (_: ActivityNotFoundException) {
             copy(url)
         }

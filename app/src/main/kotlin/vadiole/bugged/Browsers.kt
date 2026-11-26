@@ -10,7 +10,15 @@ class Browsers(private val context: Context) {
 
     private val preferences = context.getSharedPreferences("browsers", Context.MODE_PRIVATE)
 
-    fun all(): List<Browser> {
+    private var cached: List<Browser>? = null
+
+    fun invalidate() {
+        cached = null
+    }
+
+    fun all(): List<Browser> = cached ?: load().also { cached = it }
+
+    private fun load(): List<Browser> {
         val manager = context.packageManager
         return packages()
             .map { Browser(it, manager.getApplicationLabel(manager.getApplicationInfo(it, 0)).toString()) }
@@ -19,8 +27,9 @@ class Browsers(private val context: Context) {
 
     fun selected(all: List<Browser> = all()): Browser? {
         val saved = preferences.getString(KEY, null)
+        all.firstOrNull { it.packageName == saved }?.let { return it }
         val default = default()
-        return all.firstOrNull { it.packageName == saved } ?: all.firstOrNull { it.packageName == default } ?: all.firstOrNull()
+        return all.firstOrNull { it.packageName == default } ?: all.firstOrNull()
     }
 
     fun remember() {

@@ -43,7 +43,6 @@ class Nav(private val container: FrameLayout, private val provide: (Route) -> De
 
     private var leaving: Destination? = null
 
-    private var entering: Destination? = null
 
     private var cachedCornerRadius = -1f
 
@@ -146,7 +145,6 @@ class Nav(private val container: FrameLayout, private val provide: (Route) -> De
         previous?.translationX = 0f
         previous?.alpha = 1f
 
-        entering = screen
         screen.isEntering = true
         runTransition(
             interpolator = linear,
@@ -164,7 +162,6 @@ class Nav(private val container: FrameLayout, private val provide: (Route) -> De
                     it.translationX = 0f
                     if (it !in stack) container.removeView(it) else it.visibility = View.INVISIBLE
                 }
-                entering = null
             },
         )
         settle(screen, clear)
@@ -216,7 +213,6 @@ class Nav(private val container: FrameLayout, private val provide: (Route) -> De
         val dim = scrim
         val dimFrom = dim?.alpha ?: 0
 
-        entering = screen
         screen.isEntering = true
         runTransition(
             onUpdate = { f ->
@@ -241,7 +237,6 @@ class Nav(private val container: FrameLayout, private val provide: (Route) -> De
                     if (previous in stack) previous.visibility = View.INVISIBLE else container.removeView(previous)
                 }
                 removeScrim()
-                entering = null
             },
         )
     }

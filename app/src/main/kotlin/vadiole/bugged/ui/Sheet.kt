@@ -28,7 +28,7 @@ abstract class Sheet(context: Context, protected val colors: Colors, title: Int)
         contentDescription = context.getString(R.string.close)
         isFocusable = false
         accessibilityDelegate = ClickLabel(Button::class.java.name, null)
-        setOnClickListener { dismiss() }
+        setOnClickListener { if (alpha >= 0.5f) dismiss() }
     }
 
     private val scroll = object : ScrollView(context) {
@@ -171,6 +171,11 @@ abstract class Sheet(context: Context, protected val colors: Colors, title: Int)
         spring.value = offset
         spring.velocity = velocity
         if (away) dismiss() else spring.animateTo(0f)
+    }
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        if (closing || isLeaving) return true
+        return super.dispatchTouchEvent(ev)
     }
 
     override fun onInterceptTouchEvent(event: MotionEvent): Boolean {

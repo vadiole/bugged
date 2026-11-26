@@ -12,7 +12,7 @@ class App : Application() {
     val cleaner by lazy { Cleaner(asset("rules.txt"), asset("redirects.txt")) }
     val browsers by lazy { Browsers(this) }
     val setup by lazy { Setup(this) }
-    private var lastCleaned: String? = null
+    private var lastCleaned = 0
     private var lastCleanedAt = 0L
 
     override fun onCreate() {
@@ -37,22 +37,23 @@ class App : Application() {
         }
         description.extras?.let { clip.description.extras = it }
         clipboard.setPrimaryClip(clip)
-        count(cleaned)
+        count(cleaned, cleaner.dirtyLinks(text))
         return true
     }
 
     fun writeClipboard(text: String) {
         getSystemService(ClipboardManager::class.java)
             .setPrimaryClip(ClipData.newPlainText(getString(R.string.clip_label), text))
-        count(text)
+        count(text, 1)
     }
 
-    private fun count(cleaned: String) {
+    private fun count(cleaned: String, links: Int) {
         val now = SystemClock.elapsedRealtime()
-        if (cleaned == lastCleaned && now - lastCleanedAt < SAME_COPY) return
-        lastCleaned = cleaned
+        val mark = cleaned.hashCode()
+        if (mark == lastCleaned && now - lastCleanedAt < SAME_COPY) return
+        lastCleaned = mark
         lastCleanedAt = now
-        setup.count()
+        setup.count(links.coerceAtLeast(1))
     }
 
     private fun mayHoldLink(description: ClipDescription): Boolean {

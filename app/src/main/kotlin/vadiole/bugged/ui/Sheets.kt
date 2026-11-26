@@ -80,7 +80,6 @@ class OpenSheet(context: Context, private val host: Host) : Sheet(context, host.
     private val change = ActionButton(context, colors, ActionButton.Kind.Tonal, false, R.string.change)
 
     init {
-        host.browsers.remember()
         header(colors, content, R.drawable.ic_open_in_new, R.string.open_sheet_title, R.string.open_sheet_what, R.string.open_sheet_never)
         change.setOnClickListener { host.go(Route.Browser) }
         change.contentDescription = context.getString(R.string.change_browser)

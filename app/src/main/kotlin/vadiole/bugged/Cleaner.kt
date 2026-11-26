@@ -36,6 +36,11 @@ class Cleaner(rules: String, redirects: String) {
         clean(link) + it.value.substring(link.length)
     }
 
+    fun dirtyLinks(text: String): Int = LINK.findAll(text).count {
+        val link = it.value.trimEnd(*TRAILING)
+        clean(link) != link
+    }
+
     fun cleanHtml(html: String): String = LINK.replace(html) {
         val link = it.value.trimEnd(*TRAILING)
         clean(link.replace("&amp;", "&")).replace("&", "&amp;") + it.value.substring(link.length)
@@ -139,7 +144,7 @@ class Cleaner(rules: String, redirects: String) {
         const val SEGMENT_HTTP = ":segment-http"
         const val REST = ":rest"
         const val REST_HTTPS = ":rest-https"
-        val HOST = Regex("^[a-z0-9-]+(\\.[a-z0-9-]+)+(/|$)", RegexOption.IGNORE_CASE)
+        val HOST = Regex("^[a-z0-9-]+(\\.[a-z0-9-]+)+(:\\d+)?([/?#]|$)", RegexOption.IGNORE_CASE)
         val SCHEME = Regex("^https?://", RegexOption.IGNORE_CASE)
         val LINK = Regex("""https?://[^\s<>"]+""", RegexOption.IGNORE_CASE)
         val TRAILING = charArrayOf('.', ',', ';', ':', '!', '?', ')', ']', '}', '\'')

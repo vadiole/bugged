@@ -19,8 +19,8 @@ class Setup(private val context: Context) {
 
     var onCount: (() -> Unit)? = null
 
-    fun count() {
-        preferences.edit().putLong(KEY_CLEANED, cleaned + 1L).apply()
+    fun count(links: Int = 1) {
+        preferences.edit().putLong(KEY_CLEANED, cleaned + links).apply()
         onCount?.invoke()
     }
 

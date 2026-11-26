@@ -45,6 +45,8 @@ class MainActivity : Activity(), Host {
     private var backRegistered = false
     private var roleAsked = 0L
 
+    private val counted: () -> Unit = { runOnUiThread { nav.refresh() } }
+
     private val settingsObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
         override fun onChange(selfChange: Boolean) = sync()
     }
@@ -69,7 +71,10 @@ class MainActivity : Activity(), Host {
                 Route.Browser -> BrowserSheet(this, this)
             }
         }
-        nav.onChange = ::updateBack
+        nav.onChange = {
+            updateBack()
+            if (nav.current()?.route == Route.Open) container.post(::closeFinished)
+        }
         val restored = savedInstanceState?.getBundle(KEY_NAV)?.let(nav::restore) ?: false
         if (!restored) nav.setRoot(if (setup.welcomed) Route.Home else Route.Welcome)
     }
@@ -83,17 +88,18 @@ class MainActivity : Activity(), Host {
         super.onStart()
         val setting = Settings.Secure.getUriFor(Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
         contentResolver.registerContentObserver(setting, false, settingsObserver)
-        setup.onCount = { runOnUiThread { nav.refresh() } }
+        setup.onCount = counted
     }
 
     override fun onStop() {
-        setup.onCount = null
+        if (setup.onCount === counted) setup.onCount = null
         contentResolver.unregisterContentObserver(settingsObserver)
         super.onStop()
     }
 
     override fun onResume() {
         super.onResume()
+        browsers.invalidate()
         sync()
     }
 
@@ -104,12 +110,16 @@ class MainActivity : Activity(), Host {
 
     private fun sync() {
         if (!setup.openOn()) browsers.remember()
+        closeFinished()
+        nav.refresh()
+    }
+
+    private fun closeFinished() {
         when (nav.current()?.route) {
             Route.Copy -> if (setup.copyOn()) nav.pop()
             Route.Open -> if (setup.openOn()) nav.pop()
             else -> Unit
         }
-        nav.refresh()
     }
 
     override fun go(route: Route) = nav.push(route)
@@ -226,7 +236,7 @@ class MainActivity : Activity(), Host {
     private companion object {
         const val KEY_NAV = "nav"
         const val REQUEST_ROLE = 1
-        const val DENIED_WITHOUT_ASKING = 1000L
+        const val DENIED_WITHOUT_ASKING = 400L
         const val FRAGMENT_ARG_KEY = ":settings:fragment_args_key"
         const val SHOW_FRAGMENT_ARGS = ":settings:show_fragment_args"
     }
